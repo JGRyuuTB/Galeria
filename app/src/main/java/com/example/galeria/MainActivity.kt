@@ -31,11 +31,13 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.DriveFileMove
-import androidx.compose.material.icons.rounded.Image
-import androidx.compose.material.icons.rounded.PhotoAlbum
-import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.DriveFileMove
+import androidx.compose.material.icons.filled.Collections
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.outlined.Collections
+import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -69,6 +71,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import coil.ImageLoader
 import coil.decode.VideoFrameDecoder
+import coil.disk.DiskCache
+import coil.memory.MemoryCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -108,8 +112,22 @@ fun GaleriaApp(settings: AppSettings) {
     val context = LocalContext.current
     val imageLoader = remember {
         ImageLoader.Builder(context)
-            .components { add(VideoFrameDecoder.Factory()) }
-            .crossfade(true)
+            .components {
+                add(MediaThumbFetcher.Factory(context))
+                add(VideoFrameDecoder.Factory())
+            }
+            .crossfade(false)
+            .allowRgb565(true)
+            .respectCacheHeaders(false)
+            .memoryCache {
+                MemoryCache.Builder(context).maxSizePercent(0.30).build()
+            }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(context.cacheDir.resolve("thumbs"))
+                    .maxSizePercent(0.02)
+                    .build()
+            }
             .build()
     }
     val permissions = remember {
@@ -333,23 +351,15 @@ fun GalleryRoot(settings: AppSettings) {
                                 scrollBehavior = scrollBehavior,
                             ) {
                                 IconButton(onClick = { moveItems = selectedItems }) {
-                                    Icon(Icons.Rounded.DriveFileMove, contentDescription = "Mover a álbum")
+                                    Icon(Icons.Outlined.DriveFileMove, contentDescription = "Mover a álbum")
                                 }
                                 IconButton(onClick = { trashItems(selectedItems) }) {
-                                    Icon(Icons.Rounded.Delete, contentDescription = "Mover a la papelera")
+                                    Icon(Icons.Outlined.DeleteOutline, contentDescription = "Mover a la papelera")
                                 }
                             }
                         } else {
                             TopAppBar(
                                 title = { Text(if (tab == 0) "Fotos" else "Álbumes") },
-                                actions = {
-                                    IconButton(onClick = { overlay = 2 }) {
-                                        Icon(Icons.Rounded.Delete, contentDescription = "Papelera")
-                                    }
-                                    IconButton(onClick = { overlay = 1 }) {
-                                        Icon(Icons.Rounded.Settings, contentDescription = "Ajustes")
-                                    }
-                                },
                                 colors = TopAppBarDefaults.topAppBarColors(
                                     containerColor = MaterialTheme.colorScheme.surface,
                                     scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -363,7 +373,12 @@ fun GalleryRoot(settings: AppSettings) {
                             NavigationBarItem(
                                 selected = tab == 0,
                                 onClick = { tab = 0 },
-                                icon = { Icon(Icons.Rounded.Image, contentDescription = null) },
+                                icon = {
+                                    Icon(
+                                        if (tab == 0) Icons.Filled.PhotoLibrary else Icons.Outlined.PhotoLibrary,
+                                        contentDescription = null,
+                                    )
+                                },
                                 label = { Text("Fotos") },
                             )
                             NavigationBarItem(
@@ -372,8 +387,31 @@ fun GalleryRoot(settings: AppSettings) {
                                     tab = 1
                                     selected = emptySet()
                                 },
-                                icon = { Icon(Icons.Rounded.PhotoAlbum, contentDescription = null) },
+                                icon = {
+                                    Icon(
+                                        if (tab == 1) Icons.Filled.Collections else Icons.Outlined.Collections,
+                                        contentDescription = null,
+                                    )
+                                },
                                 label = { Text("Álbumes") },
+                            )
+                            NavigationBarItem(
+                                selected = false,
+                                onClick = {
+                                    selected = emptySet()
+                                    overlay = 2
+                                },
+                                icon = { Icon(Icons.Outlined.DeleteOutline, contentDescription = null) },
+                                label = { Text("Papelera") },
+                            )
+                            NavigationBarItem(
+                                selected = false,
+                                onClick = {
+                                    selected = emptySet()
+                                    overlay = 1
+                                },
+                                icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
+                                label = { Text("Ajustes") },
                             )
                         }
                     },
@@ -498,10 +536,10 @@ fun AlbumDetail(
                     scrollBehavior = scrollBehavior,
                 ) {
                     IconButton(onClick = onMove) {
-                        Icon(Icons.Rounded.DriveFileMove, contentDescription = "Mover a álbum")
+                        Icon(Icons.Outlined.DriveFileMove, contentDescription = "Mover a álbum")
                     }
                     IconButton(onClick = onTrash) {
-                        Icon(Icons.Rounded.Delete, contentDescription = "Mover a la papelera")
+                        Icon(Icons.Outlined.DeleteOutline, contentDescription = "Mover a la papelera")
                     }
                 }
             } else {

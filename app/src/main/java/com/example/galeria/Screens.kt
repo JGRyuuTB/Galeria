@@ -6,7 +6,6 @@ import android.provider.MediaStore
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
@@ -47,12 +46,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.PhotoLibrary
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.SelectAll
+import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -106,7 +105,12 @@ fun <T> motion(enabled: Boolean): AnimationSpec<T> =
 fun thumbRequest(uri: Uri, size: Int = 320): ImageRequest {
     val context = LocalContext.current
     return remember(uri, size) {
-        ImageRequest.Builder(context).data(uri).size(size).build()
+        ImageRequest.Builder(context)
+            .data(uri)
+            .size(size)
+            .crossfade(false)
+            .setParameter(THUMB_PARAM, true)
+            .build()
     }
 }
 
@@ -127,7 +131,7 @@ fun PermissionScreen(onRequest: () -> Unit, onSettings: () -> Unit) {
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                Icons.Rounded.PhotoLibrary,
+                Icons.Outlined.PhotoLibrary,
                 contentDescription = null,
                 modifier = Modifier.size(48.dp),
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -199,12 +203,12 @@ fun SelectionTopBar(
         title = { Text(if (count == 1) "1 seleccionado" else "$count seleccionados") },
         navigationIcon = {
             IconButton(onClick = onClose) {
-                Icon(Icons.Rounded.Close, contentDescription = "Cancelar selección")
+                Icon(Icons.Outlined.Close, contentDescription = "Cancelar selección")
             }
         },
         actions = {
             IconButton(onClick = onSelectAll) {
-                Icon(Icons.Rounded.SelectAll, contentDescription = "Seleccionar todo")
+                Icon(Icons.Outlined.SelectAll, contentDescription = "Seleccionar todo")
             }
             actions()
         },
@@ -295,11 +299,10 @@ fun MediaGrid(
                     m = indexed.value,
                     selectionMode = selectionMode,
                     isSelected = indexed.value.uri in selected,
-                    settings = settings,
+                    animations = settings.animations,
+                    roundedCorners = settings.roundedCorners,
                     onClick = { onClick(indexed.value, indexed.index) },
                     onLongClick = { onLongClick(indexed.value) },
-                    // Las miniaturas se deslizan a su nueva posición al cambiar de columnas.
-                    modifier = if (settings.animations) Modifier.animateItem() else Modifier,
                 )
             }
         }
@@ -312,7 +315,8 @@ fun Thumb(
     m: MediaFile,
     selectionMode: Boolean,
     isSelected: Boolean,
-    settings: AppSettings,
+    animations: Boolean,
+    roundedCorners: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -320,30 +324,28 @@ fun Thumb(
     val haptic = LocalHapticFeedback.current
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val anim = settings.animations
 
-    val pressScale by animateFloatAsState(
-        targetValue = if (pressed) 0.92f else 1f,
-        animationSpec = if (anim) spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium) else snap(),
-        label = "thumbPress",
+    // Un solo estado animado por miniatura; se lee al dibujar para no recomponer mientras se desplaza.
+    val scale = animateFloatAsState(
+        targetValue = when {
+            isSelected -> 0.86f
+            pressed -> 0.92f
+            else -> 1f
+        },
+        animationSpec = if (animations) spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium) else snap(),
+        label = "thumbScale",
     )
-    val selectScale by animateFloatAsState(
-        targetValue = if (isSelected) 0.86f else 1f,
-        animationSpec = if (anim) spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMediumLow) else snap(),
-        label = "thumbSelect",
-    )
-    val baseCorner = if (settings.roundedCorners) 12.dp else 4.dp
-    val corner by animateDpAsState(
-        targetValue = if (isSelected || pressed) 20.dp else baseCorner,
-        animationSpec = motion(anim),
-        label = "thumbCorner",
-    )
+    val corner = when {
+        isSelected -> 20.dp
+        roundedCorners -> 12.dp
+        else -> 4.dp
+    }
 
     Box(
         modifier = modifier
             .aspectRatio(1f)
             .graphicsLayer {
-                val s = pressScale * selectScale
+                val s = scale.value
                 scaleX = s
                 scaleY = s
             }
@@ -481,7 +483,6 @@ fun AlbumsGrid(
                 album = album,
                 columns = columns,
                 anim = settings.animations,
-                modifier = if (settings.animations) Modifier.animateItem() else Modifier,
                 onClick = { onOpen(album) },
             )
         }
@@ -575,7 +576,7 @@ fun MoveSheet(
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
-                                Icons.Rounded.Add,
+                                Icons.Outlined.Add,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             )

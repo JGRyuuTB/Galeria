@@ -54,23 +54,23 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.AspectRatio
-import androidx.compose.material.icons.rounded.CalendarToday
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Forward10
-import androidx.compose.material.icons.rounded.Image
-import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.outlined.AspectRatio
+import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.Forward10
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.PhotoAlbum
+import androidx.compose.material.icons.outlined.PhotoAlbum
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Replay
-import androidx.compose.material.icons.rounded.Replay10
-import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.Speed
-import androidx.compose.material.icons.rounded.Timer
-import androidx.compose.material.icons.rounded.Videocam
-import androidx.compose.material.icons.rounded.VolumeOff
-import androidx.compose.material.icons.rounded.VolumeUp
+import androidx.compose.material.icons.outlined.Replay10
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Videocam
+import androidx.compose.material.icons.outlined.VolumeOff
+import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -101,7 +101,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -234,13 +234,13 @@ fun ViewerScreen(
                         )
                     }
                     IconButton(onClick = { share(context, current) }) {
-                        Icon(Icons.Rounded.Share, contentDescription = "Compartir")
+                        Icon(Icons.Outlined.Share, contentDescription = "Compartir")
                     }
                     IconButton(onClick = { onTrash(current) }) {
-                        Icon(Icons.Rounded.Delete, contentDescription = "Mover a la papelera")
+                        Icon(Icons.Outlined.DeleteOutline, contentDescription = "Mover a la papelera")
                     }
                     IconButton(onClick = { showInfo = true }) {
-                        Icon(Icons.Rounded.Info, contentDescription = "Detalles")
+                        Icon(Icons.Outlined.Info, contentDescription = "Detalles")
                     }
                 }
             }
@@ -371,30 +371,14 @@ private fun PhotoPage(m: MediaFile, onTap: () -> Unit, onZoomChange: (Boolean) -
 
 // ------------------------------------------------------------------ Marco del reproductor
 
-/** Marco redondeado con sombra y borde (del color del tema, fijo o animado) alrededor del video. */
+/** Video limpio, solo con esquinas redondeadas (sin borde). El borde vive en el panel de controles. */
 @Composable
 private fun PlayerFrame(
     width: Dp,
     height: Dp,
-    mode: Int,
-    animate: Boolean,
     scale: Float,
     content: @Composable () -> Unit,
 ) {
-    val shape = RoundedCornerShape(28.dp)
-    val primary = MaterialTheme.colorScheme.primary
-    val tertiary = MaterialTheme.colorScheme.tertiary
-    val shift: State<Float>? = if (mode == 2 && animate) {
-        rememberInfiniteTransition(label = "frameBorder").animateFloat(
-            initialValue = 0f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(tween(2800, easing = LinearEasing), RepeatMode.Reverse),
-            label = "frameShift",
-        )
-    } else {
-        null
-    }
-
     Box(
         modifier = Modifier
             .graphicsLayer {
@@ -403,29 +387,53 @@ private fun PlayerFrame(
                 alpha = ((scale - 0.85f) / 0.15f).coerceIn(0f, 1f)
             }
             .size(width, height)
-            .shadow(16.dp, shape)
-            .drawWithContent {
-                drawContent()
-                if (mode != 0) {
-                    // El valor animado se lee al dibujar, sin recomponer la pantalla en cada fotograma.
-                    val s = shift?.value ?: 0f
-                    val brush = Brush.linearGradient(
-                        listOf(lerp(primary, tertiary, s), lerp(tertiary, primary, s)),
-                    )
-                    val stroke = 3.dp.toPx()
-                    drawRoundRect(
-                        brush = brush,
-                        topLeft = Offset(stroke / 2f, stroke / 2f),
-                        size = Size(size.width - stroke, size.height - stroke),
-                        cornerRadius = CornerRadius(28.dp.toPx() - stroke / 2f),
-                        style = Stroke(width = stroke),
-                    )
-                }
-            },
+            .clip(RoundedCornerShape(20.dp)),
     ) {
         content()
     }
 }
+
+/** Valor 0..1 que va y viene mientras el video se reproduce, para animar el borde del panel. */
+@Composable
+private fun rememberBorderShift(mode: Int, animate: Boolean): State<Float>? {
+    if (mode != 2 || !animate) return null
+    return rememberInfiniteTransition(label = "panelBorder").animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(2800, easing = LinearEasing), RepeatMode.Reverse),
+        label = "panelShift",
+    )
+}
+
+/** Borde (del color del tema, fijo o animado) alrededor del panel de controles. */
+private fun Modifier.panelBorder(
+    mode: Int,
+    shift: State<Float>?,
+    primary: Color,
+    tertiary: Color,
+    corner: Dp,
+): Modifier =
+    if (mode == 0) {
+        this
+    } else {
+        drawWithContent {
+            drawContent()
+            // El valor animado se lee al dibujar, sin recomponer la pantalla en cada fotograma.
+            val s = shift?.value ?: 0f
+            val brush = Brush.linearGradient(
+                listOf(lerp(primary, tertiary, s), lerp(tertiary, primary, s)),
+            )
+            val stroke = 3.dp.toPx()
+            drawRoundRect(
+                brush = brush,
+                topLeft = Offset(stroke / 2f, stroke / 2f),
+                // Se extiende por debajo del borde de la pantalla: solo se ven arriba y a los lados.
+                size = Size(size.width - stroke, size.height + 80.dp.toPx()),
+                cornerRadius = CornerRadius(corner.toPx() - stroke / 2f),
+                style = Stroke(width = stroke),
+            )
+        }
+    }
 
 /** Reserva espacio para la barra superior y el panel de controles y ajusta el marco al video. */
 @Composable
@@ -433,7 +441,6 @@ private fun VideoStage(
     aspect: Float,
     chrome: Boolean,
     settings: AppSettings,
-    borderActive: Boolean,
     content: @Composable () -> Unit,
 ) {
     val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -476,8 +483,6 @@ private fun VideoStage(
             PlayerFrame(
                 width = w,
                 height = h,
-                mode = settings.playerBorder,
-                animate = settings.animations && borderActive,
                 scale = appear,
                 content = content,
             )
@@ -504,7 +509,6 @@ private fun VideoPage(
                 aspect = initialAspect(m),
                 chrome = chrome,
                 settings = settings,
-                borderActive = false,
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize().background(Color.Black),
@@ -635,7 +639,6 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
             aspect = aspect,
             chrome = chrome,
             settings = settings,
-            borderActive = isPlaying,
         ) {
             AndroidView(
                 factory = { ctx ->
@@ -692,7 +695,7 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    if (lastDir < 0) Icons.Rounded.Replay10 else Icons.Rounded.Forward10,
+                    if (lastDir < 0) Icons.Outlined.Replay10 else Icons.Outlined.Forward10,
                     contentDescription = null,
                     modifier = Modifier.size(40.dp),
                     tint = Color.White,
@@ -717,11 +720,15 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
             val fraction = dragFraction
                 ?: if (duration > 0) (position.toFloat() / duration).coerceIn(0f, 1f) else 0f
 
+            val scheme = MaterialTheme.colorScheme
+            val shift = rememberBorderShift(settings.playerBorder, settings.animations && isPlaying)
             Surface(
                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-                color = MaterialTheme.colorScheme.surfaceContainer,
+                color = scheme.surfaceContainer,
                 tonalElevation = 3.dp,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .panelBorder(settings.playerBorder, shift, scheme.primary, scheme.tertiary, 32.dp),
             ) {
                 Column(
                     Modifier
@@ -755,7 +762,7 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
                     ) {
                         Box {
                             TextButton(onClick = { speedMenu = true }) {
-                                Icon(Icons.Rounded.Speed, contentDescription = null, modifier = Modifier.size(20.dp))
+                                Icon(Icons.Outlined.Speed, contentDescription = null, modifier = Modifier.size(20.dp))
                                 Spacer(Modifier.width(6.dp))
                                 Text(speedLabel(speed))
                             }
@@ -775,7 +782,7 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             IconButton(onClick = { seekBy(-10_000) }) {
-                                Icon(Icons.Rounded.Replay10, contentDescription = "Retroceder 10 segundos")
+                                Icon(Icons.Outlined.Replay10, contentDescription = "Retroceder 10 segundos")
                             }
                             PlayPauseButton(
                                 isPlaying = isPlaying,
@@ -784,7 +791,7 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
                                 onClick = { togglePlay() },
                             )
                             IconButton(onClick = { seekBy(10_000) }) {
-                                Icon(Icons.Rounded.Forward10, contentDescription = "Avanzar 10 segundos")
+                                Icon(Icons.Outlined.Forward10, contentDescription = "Avanzar 10 segundos")
                             }
                         }
 
@@ -795,7 +802,7 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
                             },
                         ) {
                             Icon(
-                                if (muted) Icons.Rounded.VolumeOff else Icons.Rounded.VolumeUp,
+                                if (muted) Icons.Outlined.VolumeOff else Icons.Outlined.VolumeUp,
                                 contentDescription = if (muted) "Activar sonido" else "Silenciar",
                             )
                         }
@@ -872,14 +879,14 @@ private fun InfoSheet(m: MediaFile, onDismiss: () -> Unit) {
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
             )
             InfoRow(
-                icon = { Icon(Icons.Rounded.CalendarToday, contentDescription = null) },
+                icon = { Icon(Icons.Outlined.CalendarToday, contentDescription = null) },
                 title = formatDate(m.dateMillis, "EEEE, d 'de' MMMM yyyy"),
                 subtitle = formatDate(m.dateMillis, "HH:mm"),
             )
             InfoRow(
                 icon = {
                     Icon(
-                        if (m.isVideo) Icons.Rounded.Videocam else Icons.Rounded.Image,
+                        if (m.isVideo) Icons.Outlined.Videocam else Icons.Outlined.Image,
                         contentDescription = null,
                     )
                 },
@@ -889,21 +896,21 @@ private fun InfoSheet(m: MediaFile, onDismiss: () -> Unit) {
             if (m.width > 0 && m.height > 0) {
                 val mp = m.width.toLong() * m.height / 1_000_000.0
                 InfoRow(
-                    icon = { Icon(Icons.Rounded.AspectRatio, contentDescription = null) },
+                    icon = { Icon(Icons.Outlined.AspectRatio, contentDescription = null) },
                     title = "${m.width} × ${m.height}",
                     subtitle = "%.1f MP".format(mp),
                 )
             }
             if (m.isVideo) {
                 InfoRow(
-                    icon = { Icon(Icons.Rounded.Timer, contentDescription = null) },
+                    icon = { Icon(Icons.Outlined.Timer, contentDescription = null) },
                     title = formatDuration(m.durationMs),
                     subtitle = "Duración",
                 )
             }
             if (m.bucket.isNotBlank()) {
                 InfoRow(
-                    icon = { Icon(Icons.Rounded.PhotoAlbum, contentDescription = null) },
+                    icon = { Icon(Icons.Outlined.PhotoAlbum, contentDescription = null) },
                     title = m.bucket,
                     subtitle = "Álbum",
                 )

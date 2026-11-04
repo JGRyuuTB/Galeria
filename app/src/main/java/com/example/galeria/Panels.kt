@@ -18,9 +18,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.DeleteForever
-import androidx.compose.material.icons.rounded.DeleteSweep
-import androidx.compose.material.icons.rounded.RestoreFromTrash
+import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.DeleteSweep
+import androidx.compose.material.icons.outlined.RestoreFromTrash
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -133,7 +133,7 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
 
             SettingsGroup("Reproductor") {
                 ChoiceRow(
-                    title = "Borde del reproductor",
+                    title = "Borde del panel del reproductor",
                     options = listOf("Ninguno", "Tema", "Animado"),
                     selected = settings.playerBorder,
                     onSelect = { settings.updatePlayerBorder(it) },
@@ -162,7 +162,7 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
             }
 
             Text(
-                "Galería 1.1",
+                "Galería 1.1.1",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 16.dp, bottom = 16.dp),
@@ -275,10 +275,10 @@ fun TrashScreen(
                         onRestore(picked)
                         selected = emptySet()
                     }) {
-                        Icon(Icons.Rounded.RestoreFromTrash, contentDescription = "Restaurar")
+                        Icon(Icons.Outlined.RestoreFromTrash, contentDescription = "Restaurar")
                     }
                     IconButton(onClick = { confirm = picked }) {
-                        Icon(Icons.Rounded.DeleteForever, contentDescription = "Eliminar definitivamente")
+                        Icon(Icons.Outlined.DeleteForever, contentDescription = "Eliminar definitivamente")
                     }
                 }
             } else {
@@ -292,7 +292,7 @@ fun TrashScreen(
                     actions = {
                         if (items.isNotEmpty()) {
                             IconButton(onClick = { confirm = items }) {
-                                Icon(Icons.Rounded.DeleteSweep, contentDescription = "Vaciar papelera")
+                                Icon(Icons.Outlined.DeleteSweep, contentDescription = "Vaciar papelera")
                             }
                         }
                     },
