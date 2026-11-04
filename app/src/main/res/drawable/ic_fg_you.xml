@@ -6,8 +6,22 @@
     android:viewportHeight="108">
     <path
         android:fillColor="@color/ic_you_fg"
-        android:pathData="M28,76 L47,50 L58,65 L66,55 L80,76 Z" />
+        android:pathData="M43,27 H65 A16,16 0 0 1 81,43 V65 A16,16 0 0 1 65,81 H43 A16,16 0 0 1 27,65 V43 A16,16 0 0 1 43,27 Z" />
     <path
         android:fillColor="@color/ic_you_fg2"
-        android:pathData="M70,38 m-7,0 a7,7 0 1 0 14,0 a7,7 0 1 0 -14,0" />
+        android:pathData="M66,41 m-5,0 a5,5 0 1 0 10,0 a5,5 0 1 0 -10,0" />
+    <path
+        android:fillColor="@color/ic_you_bg"
+        android:fillAlpha="0.6"
+        android:strokeColor="@color/ic_you_bg"
+        android:strokeAlpha="0.6"
+        android:strokeWidth="3"
+        android:strokeLineJoin="round"
+        android:pathData="M50,69 L62,54 L74,69 Z" />
+    <path
+        android:fillColor="@color/ic_you_bg"
+        android:strokeColor="@color/ic_you_bg"
+        android:strokeWidth="3"
+        android:strokeLineJoin="round"
+        android:pathData="M34,69 L48,49 L62,69 Z" />
 </vector>

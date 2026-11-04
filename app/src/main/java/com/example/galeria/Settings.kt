@@ -38,8 +38,16 @@ class AppSettings(context: Context) {
     /** 0 = sin borde, 1 = color del tema, 2 = animado */
     var playerBorder by mutableIntStateOf(prefs.getInt("playerBorder", 2))
         private set
-    var materialYouIcon by mutableStateOf(prefs.getBoolean("materialYouIcon", true))
+    var materialYouIcon by mutableStateOf(prefs.getBoolean("materialYouIcon", false))
         private set
+
+    var onboardingDone by mutableStateOf(prefs.getBoolean("onboardingDone", false))
+        private set
+
+    fun completeOnboarding() {
+        onboardingDone = true
+        prefs.edit().putBoolean("onboardingDone", true).apply()
+    }
 
     fun updatePhotoColumns(value: Int) {
         photoColumns = value.coerceIn(2, 5)

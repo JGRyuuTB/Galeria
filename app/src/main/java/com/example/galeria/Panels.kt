@@ -164,7 +164,7 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
             }
 
             Text(
-                "Galería 1.2",
+                "Galería 1.3",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 16.dp, bottom = 16.dp),

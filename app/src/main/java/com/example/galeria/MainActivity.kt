@@ -89,6 +89,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val settings = AppSettings(applicationContext)
+        applyAppIcon(applicationContext, settings.materialYouIcon)
         setContent {
             val dark = isAppDark(settings)
             // Los iconos de las barras del sistema siguen el tema elegido en Ajustes.
@@ -153,7 +154,22 @@ fun GaleriaApp(settings: AppSettings) {
     ) { result -> granted = result.values.all { it } }
 
     CompositionLocalProvider(LocalGalleryLoader provides imageLoader) {
-        if (!granted) {
+        if (!settings.onboardingDone) {
+            Onboarding(
+                settings = settings,
+                granted = granted,
+                onRequestPermission = { launcher.launch(permissions) },
+                onOpenAppSettings = {
+                    context.startActivity(
+                        Intent(
+                            android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", context.packageName, null),
+                        ),
+                    )
+                },
+                onFinish = { settings.completeOnboarding() },
+            )
+        } else if (!granted) {
             PermissionScreen(
                 onRequest = { launcher.launch(permissions) },
                 onSettings = {
