@@ -18,7 +18,16 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -33,11 +42,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.DriveFileMove
-import androidx.compose.material.icons.filled.Collections
-import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material.icons.outlined.Collections
-import androidx.compose.material.icons.outlined.PhotoLibrary
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -200,8 +204,6 @@ fun GalleryRoot(settings: AppSettings) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var filterMode by rememberSaveable { mutableIntStateOf(0) }
     var openAlbumId by rememberSaveable { mutableStateOf<Long?>(null) }
-    // 0 = ninguna, 1 = ajustes, 2 = papelera
-    var overlay by rememberSaveable { mutableIntStateOf(0) }
     var selected by remember { mutableStateOf<Set<Uri>>(emptySet()) }
     var moveItems by remember { mutableStateOf<List<MediaFile>?>(null) }
     var viewer by remember { mutableStateOf<ViewerRequest?>(null) }
@@ -309,8 +311,8 @@ fun GalleryRoot(settings: AppSettings) {
         openAlbumId = null
         selected = emptySet()
     }
-    BackHandler(enabled = selected.isNotEmpty() && overlay == 0) { selected = emptySet() }
-    BackHandler(enabled = overlay != 0) { overlay = 0 }
+    BackHandler(enabled = selected.isNotEmpty() && tab == 0) { selected = emptySet() }
+    BackHandler(enabled = tab >= 2) { tab = 0 }
     BackHandler(enabled = viewer != null) { viewer = null }
 
     Box(Modifier.fillMaxSize()) {
@@ -338,80 +340,48 @@ fun GalleryRoot(settings: AppSettings) {
             )
 
             else -> {
-                val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
                 val inSelection = selected.isNotEmpty() && tab == 0
                 Scaffold(
-                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                     topBar = {
-                        if (inSelection) {
-                            SelectionTopBar(
-                                count = selected.size,
-                                onClose = { selected = emptySet() },
-                                onSelectAll = { selected = filtered.map { it.uri }.toSet() },
-                                scrollBehavior = scrollBehavior,
-                            ) {
-                                IconButton(onClick = { moveItems = selectedItems }) {
-                                    Icon(Icons.Outlined.DriveFileMove, contentDescription = "Mover a álbum")
+                        if (tab <= 1) {
+                            if (inSelection) {
+                                SelectionTopBar(
+                                    count = selected.size,
+                                    onClose = { selected = emptySet() },
+                                    onSelectAll = { selected = filtered.map { it.uri }.toSet() },
+                                ) {
+                                    IconButton(onClick = { moveItems = selectedItems }) {
+                                        Icon(Icons.Outlined.DriveFileMove, contentDescription = "Mover a álbum")
+                                    }
+                                    IconButton(onClick = { trashItems(selectedItems) }) {
+                                        Icon(Icons.Outlined.DeleteOutline, contentDescription = "Mover a la papelera")
+                                    }
                                 }
-                                IconButton(onClick = { trashItems(selectedItems) }) {
-                                    Icon(Icons.Outlined.DeleteOutline, contentDescription = "Mover a la papelera")
-                                }
+                            } else {
+                                TopAppBar(
+                                    title = { Text(if (tab == 0) "Fotos" else "Álbumes") },
+                                    colors = TopAppBarDefaults.topAppBarColors(
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                    ),
+                                )
                             }
-                        } else {
-                            TopAppBar(
-                                title = { Text(if (tab == 0) "Fotos" else "Álbumes") },
-                                colors = TopAppBarDefaults.topAppBarColors(
-                                    containerColor = MaterialTheme.colorScheme.surface,
-                                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                ),
-                                scrollBehavior = scrollBehavior,
-                            )
                         }
                     },
                     bottomBar = {
-                        NavigationBar {
-                            NavigationBarItem(
-                                selected = tab == 0,
-                                onClick = { tab = 0 },
-                                icon = {
-                                    Icon(
-                                        if (tab == 0) Icons.Filled.PhotoLibrary else Icons.Outlined.PhotoLibrary,
-                                        contentDescription = null,
-                                    )
-                                },
-                                label = { Text("Fotos") },
-                            )
-                            NavigationBarItem(
-                                selected = tab == 1,
-                                onClick = {
-                                    tab = 1
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .navigationBarsPadding()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                        ) {
+                            LiquidNavBar(
+                                items = GalleryNavItems,
+                                selected = tab,
+                                animations = settings.animations,
+                                onSelect = {
                                     selected = emptySet()
+                                    tab = it
                                 },
-                                icon = {
-                                    Icon(
-                                        if (tab == 1) Icons.Filled.Collections else Icons.Outlined.Collections,
-                                        contentDescription = null,
-                                    )
-                                },
-                                label = { Text("Álbumes") },
-                            )
-                            NavigationBarItem(
-                                selected = false,
-                                onClick = {
-                                    selected = emptySet()
-                                    overlay = 2
-                                },
-                                icon = { Icon(Icons.Outlined.DeleteOutline, contentDescription = null) },
-                                label = { Text("Papelera") },
-                            )
-                            NavigationBarItem(
-                                selected = false,
-                                onClick = {
-                                    selected = emptySet()
-                                    overlay = 1
-                                },
-                                icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
-                                label = { Text("Ajustes") },
                             )
                         }
                     },
@@ -420,9 +390,24 @@ fun GalleryRoot(settings: AppSettings) {
                         top = padding.calculateTopPadding(),
                         bottom = padding.calculateBottomPadding(),
                     )
-                    Crossfade(targetState = tab, label = "tabs") { current ->
-                        if (current == 0) {
-                            if (all.isEmpty()) {
+                    val bottomOnly = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = padding.calculateBottomPadding())
+                    AnimatedContent(
+                        targetState = tab,
+                        transitionSpec = {
+                            if (settings.animations) {
+                                val dir = if (targetState > initialState) 1 else -1
+                                (slideInHorizontally(tween(280)) { w -> dir * w / 6 } + fadeIn(tween(220))) togetherWith
+                                    (slideOutHorizontally(tween(220)) { w -> -dir * w / 6 } + fadeOut(tween(120)))
+                            } else {
+                                EnterTransition.None togetherWith ExitTransition.None
+                            }
+                        },
+                        label = "tabs",
+                    ) { current ->
+                        when (current) {
+                            0 -> if (all.isEmpty()) {
                                 EmptyState(gridPadding)
                             } else {
                                 MediaGrid(
@@ -439,42 +424,30 @@ fun GalleryRoot(settings: AppSettings) {
                                     onLongClick = { m -> toggle(m) },
                                 )
                             }
-                        } else {
-                            AlbumsGrid(
+
+                            1 -> AlbumsGrid(
                                 albums = albums,
                                 padding = gridPadding,
                                 settings = settings,
                                 onOpen = { openAlbumId = it.id },
                             )
+
+                            2 -> Box(bottomOnly) {
+                                TrashScreen(
+                                    items = trash,
+                                    settings = settings,
+                                    onBack = { tab = 0 },
+                                    onRestore = { restoreItems(it) },
+                                    onDeleteForever = { deleteForever(it) },
+                                )
+                            }
+
+                            else -> Box(bottomOnly) {
+                                SettingsScreen(settings = settings, onBack = { tab = 0 })
+                            }
                         }
                     }
                 }
-            }
-        }
-
-        // Ajustes y papelera se deslizan desde la derecha.
-        AnimatedVisibility(
-            visible = overlay == 1,
-            enter = slideInHorizontally { it } + fadeIn(),
-            exit = slideOutHorizontally { it } + fadeOut(),
-        ) {
-            Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-                SettingsScreen(settings = settings, onBack = { overlay = 0 })
-            }
-        }
-        AnimatedVisibility(
-            visible = overlay == 2,
-            enter = slideInHorizontally { it } + fadeIn(),
-            exit = slideOutHorizontally { it } + fadeOut(),
-        ) {
-            Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-                TrashScreen(
-                    items = trash,
-                    settings = settings,
-                    onBack = { overlay = 0 },
-                    onRestore = { restoreItems(it) },
-                    onDeleteForever = { deleteForever(it) },
-                )
             }
         }
 
@@ -524,16 +497,13 @@ fun AlbumDetail(
     onMove: () -> Unit,
     onTrash: () -> Unit,
 ) {
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             if (selected.isNotEmpty()) {
                 SelectionTopBar(
                     count = selected.size,
                     onClose = onClearSelection,
                     onSelectAll = onSelectAll,
-                    scrollBehavior = scrollBehavior,
                 ) {
                     IconButton(onClick = onMove) {
                         Icon(Icons.Outlined.DriveFileMove, contentDescription = "Mover a álbum")
@@ -554,7 +524,6 @@ fun AlbumDetail(
                         containerColor = MaterialTheme.colorScheme.surface,
                         scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
                     ),
-                    scrollBehavior = scrollBehavior,
                 )
             }
         },

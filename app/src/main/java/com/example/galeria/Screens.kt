@@ -42,6 +42,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -70,7 +71,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -92,6 +96,7 @@ import androidx.compose.ui.unit.dp
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 val LocalGalleryLoader = staticCompositionLocalOf<ImageLoader> {
     error("ImageLoader no disponible")
@@ -101,17 +106,33 @@ val LocalGalleryLoader = staticCompositionLocalOf<ImageLoader> {
 fun <T> motion(enabled: Boolean): AnimationSpec<T> =
     if (enabled) spring(stiffness = Spring.StiffnessMediumLow) else snap()
 
+fun buildThumbRequest(context: android.content.Context, uri: Uri, size: Int): ImageRequest =
+    ImageRequest.Builder(context)
+        .data(uri)
+        .size(size)
+        .crossfade(false)
+        .setParameter(THUMB_PARAM, true)
+        .build()
+
 @Composable
 fun thumbRequest(uri: Uri, size: Int = 320): ImageRequest {
     val context = LocalContext.current
-    return remember(uri, size) {
-        ImageRequest.Builder(context)
-            .data(uri)
-            .size(size)
-            .crossfade(false)
-            .setParameter(THUMB_PARAM, true)
-            .build()
+    return remember(uri, size) { buildThumbRequest(context, uri, size) }
+}
+
+/** Los elementos de la papelera solo se pueden leer con la URI marcada como "incluir papelera". */
+fun thumbUriFor(m: MediaFile): Uri =
+    if (m.expiresMillis > 0L && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        m.uri.buildUpon().appendQueryParameter("includeTrashed", "1").build()
+    } else {
+        m.uri
     }
+
+/** Tamaño de miniatura según las columnas: menos píxeles = decodificación más rápida. */
+fun thumbSizeFor(columns: Int): Int = when {
+    columns >= 4 -> 256
+    columns == 3 -> 384
+    else -> 540
 }
 
 // ------------------------------------------------------------------ Permiso
@@ -272,35 +293,61 @@ fun MediaGrid(
     }
     val selectionMode = selected.isNotEmpty()
     val gap = settings.gap.dp
+    val context = LocalContext.current
+    val loader = LocalGalleryLoader.current
+    val thumbPx = thumbSizeFor(settings.photoColumns)
+    val gridState = rememberLazyGridState()
+    val prefetched = remember(items, thumbPx) { HashSet<Int>() }
+
+    // Precarga las miniaturas que están por aparecer para que no se vean huecos al desplazarse rápido.
+    LaunchedEffect(gridState, items, thumbPx) {
+        val ahead = settings.photoColumns * 6
+        snapshotFlow {
+            val keys = gridState.layoutInfo.visibleItemsInfo.mapNotNull { it.key as? Int }
+            if (keys.isEmpty()) null else keys.min() to keys.max()
+        }.distinctUntilChanged().collect { range ->
+            if (range != null) {
+                val from = (range.first - ahead).coerceAtLeast(0)
+                val to = (range.second + ahead).coerceAtMost(items.lastIndex)
+                for (i in from..to) {
+                    if (prefetched.add(i)) {
+                        loader.enqueue(buildThumbRequest(context, thumbUriFor(items[i]), thumbPx))
+                    }
+                }
+            }
+        }
+    }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(settings.photoColumns),
         modifier = Modifier
             .fillMaxSize()
             .pinchColumns(settings.photoColumns) { settings.updatePhotoColumns(it) },
+        state = gridState,
         contentPadding = padding,
         horizontalArrangement = Arrangement.spacedBy(gap),
         verticalArrangement = Arrangement.spacedBy(gap),
     ) {
         if (header != null) {
-            item(span = { GridItemSpan(maxLineSpan) }, key = "header") { header() }
+            item(span = { GridItemSpan(maxLineSpan) }, key = "header", contentType = "header") { header() }
         }
         groups.forEach { group ->
             val first = group.first()
-            item(span = { GridItemSpan(maxLineSpan) }, key = "day-${first.index}") {
+            item(span = { GridItemSpan(maxLineSpan) }, key = "day-${first.index}", contentType = "day") {
                 Text(
                     dayLabel(first.value.dateMillis),
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
                 )
             }
-            items(group, key = { it.index }) { indexed ->
+            items(group, key = { it.index }, contentType = { "thumb" }) { indexed ->
                 Thumb(
                     m = indexed.value,
                     selectionMode = selectionMode,
                     isSelected = indexed.value.uri in selected,
                     animations = settings.animations,
                     roundedCorners = settings.roundedCorners,
+                    thumbPx = thumbPx,
                     onClick = { onClick(indexed.value, indexed.index) },
                     onLongClick = { onLongClick(indexed.value) },
                 )
@@ -317,24 +364,24 @@ fun Thumb(
     isSelected: Boolean,
     animations: Boolean,
     roundedCorners: Boolean,
+    thumbPx: Int,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
     val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
 
-    // Un solo estado animado por miniatura; se lee al dibujar para no recomponer mientras se desplaza.
-    val scale = animateFloatAsState(
-        targetValue = when {
-            isSelected -> 0.86f
-            pressed -> 0.92f
-            else -> 1f
-        },
-        animationSpec = if (animations) spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium) else snap(),
-        label = "thumbScale",
-    )
+    // Solo hay estado animado cuando se está seleccionando; al desplazarse cada miniatura es barata.
+    val scale: State<Float>? = if (selectionMode) {
+        animateFloatAsState(
+            targetValue = if (isSelected) 0.86f else 1f,
+            animationSpec = if (animations) spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMediumLow) else snap(),
+            label = "thumbSelect",
+        )
+    } else {
+        null
+    }
     val corner = when {
         isSelected -> 20.dp
         roundedCorners -> 12.dp
@@ -344,11 +391,17 @@ fun Thumb(
     Box(
         modifier = modifier
             .aspectRatio(1f)
-            .graphicsLayer {
-                val s = scale.value
-                scaleX = s
-                scaleY = s
-            }
+            .then(
+                if (scale != null) {
+                    Modifier.graphicsLayer {
+                        val s = scale.value
+                        scaleX = s
+                        scaleY = s
+                    }
+                } else {
+                    Modifier
+                },
+            )
             .clip(RoundedCornerShape(corner))
             .background(MaterialTheme.colorScheme.surfaceContainerHighest)
             .combinedClickable(
@@ -361,15 +414,9 @@ fun Thumb(
                 },
             ),
     ) {
-        // Los elementos de la papelera solo se pueden leer con la URI marcada como "incluir papelera".
-        val thumbUri =
-            if (m.expiresMillis > 0L && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                m.uri.buildUpon().appendQueryParameter("includeTrashed", "1").build()
-            } else {
-                m.uri
-            }
+        val thumbUri = thumbUriFor(m)
         AsyncImage(
-            model = thumbRequest(thumbUri),
+            model = thumbRequest(thumbUri, thumbPx),
             imageLoader = LocalGalleryLoader.current,
             contentDescription = m.name,
             contentScale = ContentScale.Crop,

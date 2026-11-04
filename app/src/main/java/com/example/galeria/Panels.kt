@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -58,6 +59,7 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
     val gapValues = listOf(0, 2, 6)
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = { Text("Ajustes") },
@@ -162,7 +164,7 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
             }
 
             Text(
-                "Galería 1.1.1",
+                "Galería 1.2",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 16.dp, bottom = 16.dp),
@@ -264,6 +266,7 @@ fun TrashScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             if (selected.isNotEmpty()) {
                 SelectionTopBar(
