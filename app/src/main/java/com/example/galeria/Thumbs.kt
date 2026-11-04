@@ -42,7 +42,7 @@ class MediaThumbFetcher(
     class Factory(private val context: Context) : Fetcher.Factory<Uri> {
         override fun create(data: Uri, options: Options, imageLoader: ImageLoader): Fetcher? {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return null
-            if (options.parameters.value(THUMB_PARAM) != true) return null
+            if (options.parameters.value<Boolean>(THUMB_PARAM) != true) return null
             if (data.authority != "media") return null
             if (data.getQueryParameter("includeTrashed") != null) return null
             val px = (options.size.width as? Dimension.Pixels)?.px ?: return null
