@@ -41,52 +41,52 @@ class AppSettings(context: Context) {
     var materialYouIcon by mutableStateOf(prefs.getBoolean("materialYouIcon", true))
         private set
 
-    fun setPhotoColumns(value: Int) {
+    fun updatePhotoColumns(value: Int) {
         photoColumns = value.coerceIn(2, 5)
         prefs.edit().putInt("photoColumns", photoColumns).apply()
     }
 
-    fun setAlbumColumns(value: Int) {
+    fun updateAlbumColumns(value: Int) {
         albumColumns = value.coerceIn(2, 5)
         prefs.edit().putInt("albumColumns", albumColumns).apply()
     }
 
-    fun setThemeMode(value: Int) {
+    fun updateThemeMode(value: Int) {
         themeMode = value
         prefs.edit().putInt("themeMode", value).apply()
     }
 
-    fun setDynamicColor(value: Boolean) {
+    fun updateDynamicColor(value: Boolean) {
         dynamicColor = value
         prefs.edit().putBoolean("dynamicColor", value).apply()
     }
 
-    fun setAnimations(value: Boolean) {
+    fun updateAnimations(value: Boolean) {
         animations = value
         prefs.edit().putBoolean("animations", value).apply()
     }
 
-    fun setGap(value: Int) {
+    fun updateGap(value: Int) {
         gap = value
         prefs.edit().putInt("gap", value).apply()
     }
 
-    fun setRoundedCorners(value: Boolean) {
+    fun updateRoundedCorners(value: Boolean) {
         roundedCorners = value
         prefs.edit().putBoolean("roundedCorners", value).apply()
     }
 
-    fun setAutoplay(value: Boolean) {
+    fun updateAutoplay(value: Boolean) {
         autoplay = value
         prefs.edit().putBoolean("autoplay", value).apply()
     }
 
-    fun setPlayerBorder(value: Int) {
+    fun updatePlayerBorder(value: Int) {
         playerBorder = value
         prefs.edit().putInt("playerBorder", value).apply()
     }
 
-    fun setMaterialYouIcon(value: Boolean) {
+    fun updateMaterialYouIcon(value: Boolean) {
         materialYouIcon = value
         prefs.edit().putBoolean("materialYouIcon", value).apply()
     }

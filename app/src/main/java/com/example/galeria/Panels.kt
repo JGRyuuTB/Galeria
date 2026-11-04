@@ -82,7 +82,7 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
                     title = "Tema",
                     options = listOf("Sistema", "Claro", "Oscuro"),
                     selected = settings.themeMode,
-                    onSelect = { settings.setThemeMode(it) },
+                    onSelect = { settings.updateThemeMode(it) },
                 )
                 SwitchRow(
                     title = "Colores dinámicos",
@@ -93,13 +93,13 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
                     },
                     checked = settings.dynamicColor && canDynamic,
                     enabled = canDynamic,
-                    onChange = { settings.setDynamicColor(it) },
+                    onChange = { settings.updateDynamicColor(it) },
                 )
                 SwitchRow(
                     title = "Animaciones",
                     subtitle = "Transiciones y efectos de movimiento",
                     checked = settings.animations,
-                    onChange = { settings.setAnimations(it) },
+                    onChange = { settings.updateAnimations(it) },
                 )
             }
 
@@ -109,25 +109,25 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
                     subtitle = "También puedes pellizcar la pantalla para cambiarlas",
                     options = listOf("2", "3", "4", "5"),
                     selected = settings.photoColumns - 2,
-                    onSelect = { settings.setPhotoColumns(it + 2) },
+                    onSelect = { settings.updatePhotoColumns(it + 2) },
                 )
                 ChoiceRow(
                     title = "Columnas en Álbumes",
                     options = listOf("2", "3", "4", "5"),
                     selected = settings.albumColumns - 2,
-                    onSelect = { settings.setAlbumColumns(it + 2) },
+                    onSelect = { settings.updateAlbumColumns(it + 2) },
                 )
                 ChoiceRow(
                     title = "Espacio entre miniaturas",
                     options = listOf("Ninguno", "Pequeño", "Grande"),
                     selected = gapValues.indexOf(settings.gap).coerceAtLeast(0),
-                    onSelect = { settings.setGap(gapValues[it]) },
+                    onSelect = { settings.updateGap(gapValues[it]) },
                 )
                 SwitchRow(
                     title = "Esquinas redondeadas",
                     subtitle = "Miniaturas con las esquinas más suaves",
                     checked = settings.roundedCorners,
-                    onChange = { settings.setRoundedCorners(it) },
+                    onChange = { settings.updateRoundedCorners(it) },
                 )
             }
 
@@ -136,13 +136,13 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
                     title = "Borde del reproductor",
                     options = listOf("Ninguno", "Tema", "Animado"),
                     selected = settings.playerBorder,
-                    onSelect = { settings.setPlayerBorder(it) },
+                    onSelect = { settings.updatePlayerBorder(it) },
                 )
                 SwitchRow(
                     title = "Reproducir al abrir",
                     subtitle = "Los videos empiezan solos",
                     checked = settings.autoplay,
-                    onChange = { settings.setAutoplay(it) },
+                    onChange = { settings.updateAutoplay(it) },
                 )
             }
 
@@ -155,7 +155,7 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
                     selected = if (settings.materialYouIcon) 0 else 1,
                     onSelect = {
                         val you = it == 0
-                        settings.setMaterialYouIcon(you)
+                        settings.updateMaterialYouIcon(you)
                         applyAppIcon(context, you)
                     },
                 )

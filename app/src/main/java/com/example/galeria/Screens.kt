@@ -273,7 +273,7 @@ fun MediaGrid(
         columns = GridCells.Fixed(settings.photoColumns),
         modifier = Modifier
             .fillMaxSize()
-            .pinchColumns(settings.photoColumns) { settings.setPhotoColumns(it) },
+            .pinchColumns(settings.photoColumns) { settings.updatePhotoColumns(it) },
         contentPadding = padding,
         horizontalArrangement = Arrangement.spacedBy(gap),
         verticalArrangement = Arrangement.spacedBy(gap),
@@ -466,7 +466,7 @@ fun AlbumsGrid(
         columns = GridCells.Fixed(columns),
         modifier = Modifier
             .fillMaxSize()
-            .pinchColumns(columns) { settings.setAlbumColumns(it) },
+            .pinchColumns(columns) { settings.updateAlbumColumns(it) },
         contentPadding = PaddingValues(
             start = 16.dp,
             end = 16.dp,
