@@ -1,8 +1,11 @@
 package com.example.galeria
 
 import android.content.ContentUris
+import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -22,6 +25,8 @@ data class MediaFile(
     val mime: String,
     val bucketId: Long,
     val bucket: String,
+    val relativePath: String = "",
+    val expiresMillis: Long = 0L,
 )
 
 data class Album(
@@ -30,14 +35,25 @@ data class Album(
     val cover: MediaFile,
     val count: Int,
     val items: List<MediaFile>,
+    val relativePath: String,
 )
 
 object MediaRepo {
 
     fun load(context: Context): List<MediaFile> {
         val result = ArrayList<MediaFile>()
-        result += query(context, video = false)
-        result += query(context, video = true)
+        result += query(context, video = false, trashed = false)
+        result += query(context, video = true, trashed = false)
+        result.sortByDescending { it.dateMillis }
+        return result
+    }
+
+    /** Elementos en la papelera del sistema (Android 11+). */
+    fun loadTrash(context: Context): List<MediaFile> {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return emptyList()
+        val result = ArrayList<MediaFile>()
+        result += query(context, video = false, trashed = true)
+        result += query(context, video = true, trashed = true)
         result.sortByDescending { it.dateMillis }
         return result
     }
@@ -51,11 +67,28 @@ object MediaRepo {
                     cover = list.first(),
                     count = list.size,
                     items = list,
+                    relativePath = list.first().relativePath,
                 )
             }
             .sortedByDescending { it.cover.dateMillis }
 
-    private fun query(context: Context, video: Boolean): List<MediaFile> {
+    /** Mueve los archivos a otra carpeta (álbum). Requiere permiso de escritura ya concedido. */
+    fun move(context: Context, items: List<MediaFile>, relativePath: String): Int {
+        var ok = 0
+        for (m in items) {
+            try {
+                val values = ContentValues().apply {
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
+                }
+                if (context.contentResolver.update(m.uri, values, null, null) > 0) ok++
+            } catch (e: Exception) {
+                // Algunas carpetas no admiten ciertos tipos (p. ej. un video en una carpeta solo de fotos).
+            }
+        }
+        return ok
+    }
+
+    private fun query(context: Context, video: Boolean, trashed: Boolean): List<MediaFile> {
         val base: Uri =
             if (video) MediaStore.Video.Media.EXTERNAL_CONTENT_URI
             else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
@@ -81,10 +114,23 @@ object MediaRepo {
             colTaken, colBucketId, colBucket,
         )
         if (video) projection += colDuration
+        // Android 10+: ruta relativa de la carpeta (necesaria para mover entre álbumes).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            projection += MediaStore.MediaColumns.RELATIVE_PATH
+        }
+        if (trashed) projection += MediaStore.MediaColumns.DATE_EXPIRES
 
         val out = ArrayList<MediaFile>()
         try {
-            context.contentResolver.query(base, projection.toTypedArray(), null, null, null)?.use { c ->
+            val cursor = if (trashed) {
+                val args = Bundle().apply {
+                    putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
+                }
+                context.contentResolver.query(base, projection.toTypedArray(), args, null)
+            } else {
+                context.contentResolver.query(base, projection.toTypedArray(), null, null, null)
+            }
+            cursor?.use { c ->
                 val iId = c.getColumnIndexOrThrow(colId)
                 val iName = c.getColumnIndexOrThrow(colName)
                 val iAdded = c.getColumnIndexOrThrow(colAdded)
@@ -96,6 +142,14 @@ object MediaRepo {
                 val iBucketId = c.getColumnIndexOrThrow(colBucketId)
                 val iBucket = c.getColumnIndexOrThrow(colBucket)
                 val iDuration = if (video) c.getColumnIndexOrThrow(colDuration) else -1
+                val iRel =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        c.getColumnIndexOrThrow(MediaStore.MediaColumns.RELATIVE_PATH)
+                    } else {
+                        -1
+                    }
+                val iExpires =
+                    if (trashed) c.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_EXPIRES) else -1
 
                 while (c.moveToNext()) {
                     val id = c.getLong(iId)
@@ -114,6 +168,8 @@ object MediaRepo {
                         mime = c.getString(iMime) ?: if (video) "video/*" else "image/*",
                         bucketId = c.getLong(iBucketId),
                         bucket = c.getString(iBucket) ?: "",
+                        relativePath = if (iRel >= 0) c.getString(iRel) ?: "" else "",
+                        expiresMillis = if (iExpires >= 0) c.getLong(iExpires) * 1000L else 0L,
                     )
                 }
             }
