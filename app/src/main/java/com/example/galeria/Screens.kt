@@ -362,7 +362,7 @@ fun Thumb(
         // Los elementos de la papelera solo se pueden leer con la URI marcada como "incluir papelera".
         val thumbUri =
             if (m.expiresMillis > 0L && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                MediaStore.setIncludeTrashed(m.uri)
+                m.uri.buildUpon().appendQueryParameter("includeTrashed", "1").build()
             } else {
                 m.uri
             }
