@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/JGRyuuTB/Galeria/releases/latest"><img src="https://img.shields.io/github/v/release/JGRyuuTB/Galeria?include_prereleases&logo=github&style=for-the-badge&label=Última%20versión" alt="Última versión"></a>
+  <a href="https://github.com/JGRyuuTB/Galeria/releases/latest"><img src="https://img.shields.io/github/v/release/JGRyuuTB/Galeria?include_prereleases&logo=github&style=for-the-badge&label=%C3%9Altima%20versi%C3%B3n" alt="Última versión"></a>
   <a href="https://github.com/JGRyuuTB/Galeria/releases"><img src="https://img.shields.io/github/downloads/JGRyuuTB/Galeria/total?logo=github&style=for-the-badge" alt="Descargas"></a>
   <img src="https://img.shields.io/badge/Android-8.0%2B-green?style=for-the-badge&logo=android" alt="Android 8.0+">
   <img src="https://img.shields.io/badge/Kotlin-100%25-purple?style=for-the-badge&logo=kotlin" alt="Kotlin">
