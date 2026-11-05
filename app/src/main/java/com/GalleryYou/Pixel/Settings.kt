@@ -1,4 +1,4 @@
-package com.example.galeria
+package com.GalleryYou.Pixel
 
 import android.app.Activity
 import android.content.ComponentName
@@ -111,8 +111,8 @@ class AppSettings(context: Context) {
 /** Activa el alias del icono elegido y desactiva el otro (ver AndroidManifest). */
 fun applyAppIcon(context: Context, materialYou: Boolean) {
     val pm = context.packageManager
-    val you = ComponentName(context.packageName, "com.example.galeria.AliasMaterialYou")
-    val default = ComponentName(context.packageName, "com.example.galeria.AliasDefault")
+    val you = ComponentName(context.packageName, "com.GalleryYou.Pixel.AliasMaterialYou")
+    val default = ComponentName(context.packageName, "com.GalleryYou.Pixel.AliasDefault")
     val enable = if (materialYou) you else default
     val disable = if (materialYou) default else you
     pm.setComponentEnabledSetting(

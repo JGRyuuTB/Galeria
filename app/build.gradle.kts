@@ -5,15 +5,15 @@ plugins {
 }
 
 android {
-    namespace = "com.example.galeria"
+    namespace = "com.GalleryYou.Pixel"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.galeria"
+        applicationId = "com.GalleryYou.Pixel"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.4"
+        versionCode = 7
+        versionName = "1.5"
     }
 
     // Clave fija incluida en el repo: así cada versión nueva se instala encima de la anterior

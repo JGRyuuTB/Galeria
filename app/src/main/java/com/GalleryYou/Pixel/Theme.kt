@@ -1,4 +1,4 @@
-package com.example.galeria
+package com.GalleryYou.Pixel
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

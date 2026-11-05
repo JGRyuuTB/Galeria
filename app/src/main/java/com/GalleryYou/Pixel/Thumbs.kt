@@ -1,4 +1,4 @@
-package com.example.galeria
+package com.GalleryYou.Pixel
 
 import android.content.Context
 import android.graphics.drawable.BitmapDrawable

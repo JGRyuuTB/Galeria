@@ -1,4 +1,4 @@
-package com.example.galeria
+package com.GalleryYou.Pixel
 
 import android.net.Uri
 import android.os.Build

@@ -1,4 +1,4 @@
-package com.example.galeria
+package com.GalleryYou.Pixel
 
 import android.content.Context
 import android.content.Intent
@@ -14,6 +14,7 @@ import androidx.compose.animation.core.animate
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.core.spring
@@ -787,8 +788,6 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
             exit = fadeOut() + slideOutVertically { it },
         ) {
             val shownPosition = dragFraction?.let { (it * duration).toLong() } ?: position
-            val fraction = dragFraction
-                ?: if (duration > 0) (position.toFloat() / duration).coerceIn(0f, 1f) else 0f
 
             val scheme = MaterialTheme.colorScheme
             val shift = rememberBorderShift(settings.playerBorder, settings.animations && isPlaying)
@@ -805,14 +804,13 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
                         .navigationBarsPadding()
                         .padding(horizontal = 20.dp, vertical = 12.dp),
                 ) {
-                    Slider(
-                        value = fraction,
-                        onValueChange = { dragFraction = it },
-                        onValueChangeFinished = {
-                            dragFraction?.let { f -> exo.seekTo((f * duration).toLong()) }
-                            dragFraction = null
-                        },
-                        valueRange = 0f..1f,
+                    SeekBar(
+                        exo = exo,
+                        duration = duration,
+                        playing = isPlaying,
+                        position = position,
+                        dragFraction = dragFraction,
+                        onDrag = { dragFraction = it },
                     )
                     Row(
                         Modifier.fillMaxWidth().padding(horizontal = 8.dp),
@@ -825,12 +823,11 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
                             style = MaterialTheme.typography.labelMedium,
                         )
                     }
-                    Row(
+                    Box(
                         Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Box {
+                        Box(Modifier.align(Alignment.CenterStart)) {
                             TextButton(onClick = { speedMenu = true }) {
                                 Icon(Icons.Outlined.Speed, contentDescription = null, modifier = Modifier.size(20.dp))
                                 Spacer(Modifier.width(6.dp))
@@ -866,6 +863,7 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
                         }
 
                         IconButton(
+                            modifier = Modifier.align(Alignment.CenterEnd),
                             onClick = {
                                 muted = !muted
                                 exo.volume = if (muted) 0f else 1f
@@ -881,6 +879,51 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
             }
         }
     }
+}
+
+/**
+ * Barra de progreso: mientras se reproduce se actualiza en cada fotograma de la pantalla
+ * (no cada 200 ms), y solo esta pieza se redibuja, así que se ve fluida sin recargar el resto.
+ */
+@Composable
+private fun SeekBar(
+    exo: ExoPlayer,
+    duration: Long,
+    playing: Boolean,
+    position: Long,
+    dragFraction: Float?,
+    onDrag: (Float?) -> Unit,
+) {
+    var progress by remember { mutableFloatStateOf(0f) }
+
+    fun current(): Float =
+        if (duration > 0L) (exo.currentPosition.toFloat() / duration).coerceIn(0f, 1f) else 0f
+
+    // En pausa (o tras saltar con los botones) se sincroniza con la posición conocida.
+    LaunchedEffect(position, duration) {
+        if (!playing) progress = current()
+    }
+    // Reproduciendo: una lectura por fotograma.
+    LaunchedEffect(exo, playing, duration) {
+        if (playing) {
+            while (true) {
+                withFrameNanos { }
+                progress = current()
+            }
+        } else {
+            progress = current()
+        }
+    }
+
+    Slider(
+        value = dragFraction ?: progress,
+        onValueChange = { onDrag(it) },
+        onValueChangeFinished = {
+            dragFraction?.let { f -> exo.seekTo((f * duration).toLong()) }
+            onDrag(null)
+        },
+        valueRange = 0f..1f,
+    )
 }
 
 @Composable

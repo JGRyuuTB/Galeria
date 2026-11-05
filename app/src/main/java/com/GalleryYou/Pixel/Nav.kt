@@ -1,4 +1,4 @@
-package com.example.galeria
+package com.GalleryYou.Pixel
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Animatable

@@ -1,4 +1,4 @@
-package com.example.galeria
+package com.GalleryYou.Pixel
 
 import android.net.Uri
 import android.os.Build
@@ -176,7 +176,7 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
             }
 
             Text(
-                "Galería 1.4",
+                "Galería 1.5",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 16.dp, bottom = 16.dp),
