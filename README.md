@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="app/banner.png" width="70%" alt="Pixel Gallery banner">
+</p>
+
 # Pixel Gallery 🖼️
 
 <p align="center">
