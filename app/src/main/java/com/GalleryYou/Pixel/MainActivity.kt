@@ -355,7 +355,6 @@ fun GalleryRoot(settings: AppSettings) {
             else -> {
                 val inSelection = selected.isNotEmpty() && tab == 0
                 val backdrop = rememberBackdropState(settings)
-                val cameraContext = LocalContext.current
                 Scaffold(
                     topBar = {
                         if (tab <= 1) {
@@ -406,7 +405,6 @@ fun GalleryRoot(settings: AppSettings) {
                                 selected = tab,
                                 animations = settings.animations,
                                 backdrop = backdrop,
-                                onCamera = { launchCamera(cameraContext) },
                                 onSelect = {
                                     selected = emptySet()
                                     tab = it
@@ -573,13 +571,3 @@ fun AlbumDetail(
     }
 }
 
-/** Abre la app de cámara del sistema (no necesita permisos). */
-private fun launchCamera(context: Context) {
-    try {
-        context.startActivity(
-            Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-        )
-    } catch (e: Exception) {
-        Toast.makeText(context, "No se encontró una app de cámara", Toast.LENGTH_SHORT).show()
-    }
-}

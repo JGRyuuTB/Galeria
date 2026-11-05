@@ -50,7 +50,7 @@ val GalleryNavItems = listOf(
 
 /**
  * Barra de navegación flotante de cristal: una píldora con los destinos (el activo muestra icono
- * y nombre dentro de su propia píldora) y un botón circular aparte para abrir la cámara.
+ * y nombre dentro de su propia píldora) sobre un fondo de cristal.
  */
 @Composable
 fun GlassNavBar(
@@ -58,13 +58,11 @@ fun GlassNavBar(
     selected: Int,
     animations: Boolean,
     onSelect: (Int) -> Unit,
-    onCamera: (() -> Unit)?,
     modifier: Modifier = Modifier,
     backdrop: BackdropState? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        val showCamera = onCamera != null && maxWidth >= 340.dp
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Row(
                 modifier = Modifier
@@ -82,28 +80,6 @@ fun GlassNavBar(
             ) {
                 items.forEachIndexed { i, dest ->
                     NavItem(dest, i == selected, animations) { onSelect(i) }
-                }
-            }
-            if (showCamera) {
-                Spacer(Modifier.width(10.dp))
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .glassSurface(
-                            state = backdrop,
-                            tint = scheme.primary.copy(alpha = 0.60f),
-                            fallback = scheme.primary,
-                            corner = 32.dp,
-                        )
-                        .clip(CircleShape)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = { onCamera?.invoke() },
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(AppIcons.Camera, contentDescription = "Cámara", tint = scheme.onPrimary, modifier = Modifier.size(26.dp))
                 }
             }
         }

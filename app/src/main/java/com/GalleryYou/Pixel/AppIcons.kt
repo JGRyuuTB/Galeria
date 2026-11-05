@@ -16,7 +16,7 @@ object AppIcons {
     val Image: ImageVector by lazy {
         build("Image",
             line("M8,3 H16 A5,5 0 0 1 21,8 V16 A5,5 0 0 1 16,21 H8 A5,5 0 0 1 3,16 V8 A5,5 0 0 1 8,3 Z"),
-            line("M6.8999999999999995,8.6 A1.7,1.7 0 1 0 10.3,8.6 A1.7,1.7 0 1 0 6.9,8.6 Z"),
+            line("M6.9,8.6 A1.7,1.7 0 1 0 10.3,8.6 A1.7,1.7 0 1 0 6.9,8.6 Z"),
             line("M3.5,16.5 L8.5,12 L12.5,15.5 L15.5,13 L20.5,17"),
         )
     }
@@ -24,7 +24,7 @@ object AppIcons {
         build("ImageDuo",
             fill("M8,3 H16 A5,5 0 0 1 21,8 V16 A5,5 0 0 1 16,21 H8 A5,5 0 0 1 3,16 V8 A5,5 0 0 1 8,3 Z", 0.28f),
             line("M8,3 H16 A5,5 0 0 1 21,8 V16 A5,5 0 0 1 16,21 H8 A5,5 0 0 1 3,16 V8 A5,5 0 0 1 8,3 Z"),
-            line("M6.8999999999999995,8.6 A1.7,1.7 0 1 0 10.3,8.6 A1.7,1.7 0 1 0 6.9,8.6 Z"),
+            line("M6.9,8.6 A1.7,1.7 0 1 0 10.3,8.6 A1.7,1.7 0 1 0 6.9,8.6 Z"),
             line("M3.5,16.5 L8.5,12 L12.5,15.5 L15.5,13 L20.5,17"),
         )
     }
@@ -401,6 +401,58 @@ object AppIcons {
             line("M9,6.5 V5 A1.5,1.5 0 0 1 10.5,3.5 H13.5 A1.5,1.5 0 0 1 15,5 V6.5"),
             line("M6,6.5 L7,19 A2,2 0 0 0 9,21 H15 A2,2 0 0 0 17,19 L18,6.5"),
             line("M12,17 V11.6 M9.8,13.8 L12,11.6 L14.2,13.8"),
+        )
+    }
+    val Globe: ImageVector by lazy {
+        build("Globe",
+            line("M3,12 A9,9 0 1 0 21,12 A9,9 0 1 0 3,12 Z"),
+            line("M12,3 A4.2,9 0 0 0 12,21 A4.2,9 0 0 0 12,3 Z"),
+            line("M3.2,12 H20.8"),
+        )
+    }
+    val GlobeDuo: ImageVector by lazy {
+        build("GlobeDuo",
+            fill("M3,12 A9,9 0 1 0 21,12 A9,9 0 1 0 3,12 Z", 0.28f),
+            line("M3,12 A9,9 0 1 0 21,12 A9,9 0 1 0 3,12 Z"),
+            line("M12,3 A4.2,9 0 0 0 12,21 A4.2,9 0 0 0 12,3 Z"),
+            line("M3.2,12 H20.8"),
+        )
+    }
+    val Send: ImageVector by lazy {
+        build("Send",
+            line("M21,3 L3,10 L10.2,13.4 L13.6,21 Z"),
+            line("M21,3 L10.2,13.4"),
+        )
+    }
+    val SendDuo: ImageVector by lazy {
+        build("SendDuo",
+            fill("M21,3 L3,10 L10.2,13.4 L13.6,21 Z", 0.28f),
+            line("M21,3 L3,10 L10.2,13.4 L13.6,21 Z"),
+            line("M21,3 L10.2,13.4"),
+        )
+    }
+    val Megaphone: ImageVector by lazy {
+        build("Megaphone",
+            line("M4,10 V14 A1,1 0 0 0 5,15 H7.5 L15.5,19 V5 L7.5,9 H5 A1,1 0 0 0 4,10 Z"),
+            line("M8,15 L9,19.6 H11.6 L10.8,16.6"),
+            line("M18.6,9.4 A3.6,3.6 0 0 1 18.6,14.6"),
+        )
+    }
+    val MegaphoneDuo: ImageVector by lazy {
+        build("MegaphoneDuo",
+            fill("M4,10 V14 A1,1 0 0 0 5,15 H7.5 L15.5,19 V5 L7.5,9 H5 A1,1 0 0 0 4,10 Z", 0.28f),
+            line("M4,10 V14 A1,1 0 0 0 5,15 H7.5 L15.5,19 V5 L7.5,9 H5 A1,1 0 0 0 4,10 Z"),
+            line("M8,15 L9,19.6 H11.6 L10.8,16.6"),
+            line("M18.6,9.4 A3.6,3.6 0 0 1 18.6,14.6"),
+        )
+    }
+    val GitBranch: ImageVector by lazy {
+        build("GitBranch",
+            line("M3.7,5.8 A2.3,2.3 0 1 0 8.3,5.8 A2.3,2.3 0 1 0 3.7,5.8 Z"),
+            line("M3.7,18.2 A2.3,2.3 0 1 0 8.3,18.2 A2.3,2.3 0 1 0 3.7,18.2 Z"),
+            line("M15.7,8.6 A2.3,2.3 0 1 0 20.3,8.6 A2.3,2.3 0 1 0 15.7,8.6 Z"),
+            line("M6,8.1 V15.9"),
+            line("M18,10.9 C18,14.6 14.6,14.6 11.6,14.8 C8.4,15 6,15.6 6,15.9"),
         )
     }
 

@@ -26,4 +26,9 @@ En local: `gradle assembleRelease` (JDK 17).
 ## Permisos
 
 - Fotos y videos: para mostrar tu colección.
-- La cámara se abre con la app de cámara del sistema, sin permisos adicionales.
+
+## Contacto
+
+- GitHub: https://github.com/JGRyuuTB
+- Telegram: https://t.me/JG_ryuu
+- Canal: https://t.me/dragonsbastion

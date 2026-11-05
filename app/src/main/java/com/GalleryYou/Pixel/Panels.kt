@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,6 +53,12 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
     val context = LocalContext.current
     val canDynamic = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val gapValues = listOf(0, 2, 6)
+    var showAbout by rememberSaveable { mutableStateOf(false) }
+    BackHandler(enabled = showAbout) { showAbout = false }
+    if (showAbout) {
+        AboutScreen(onBack = { showAbout = false })
+        return
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -174,22 +181,10 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
                 ListItem(
                     headlineContent = { Text("Galería") },
                     supportingContent = { Text("Versión 1.0.0 · Estable") },
+                    leadingContent = { Icon(AppIcons.Info, contentDescription = null) },
+                    trailingContent = { Icon(AppIcons.ArrowForward, contentDescription = null) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                )
-                ListItem(
-                    headlineContent = { Text("Paquete") },
-                    supportingContent = { Text("com.GalleryYou.Pixel") },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                )
-                ListItem(
-                    headlineContent = { Text("Código abierto") },
-                    supportingContent = {
-                        Text(
-                            "Licencia MIT. Hecha con Jetpack Compose, Material 3, Media3 y Coil " +
-                                "(todos con licencia Apache 2.0).",
-                        )
-                    },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    modifier = Modifier.clickable { showAbout = true },
                 )
             }
 
