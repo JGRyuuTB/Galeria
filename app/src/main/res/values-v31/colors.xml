@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Android 12+: el icono usa los colores dinámicos del sistema (Material You). -->
-    <color name="ic_you_bg">@android:color/system_accent1_600</color>
-    <color name="ic_you_fg">@android:color/system_accent1_50</color>
-    <color name="ic_you_fg2">@android:color/system_accent3_200</color>
+    <color name="ic_you_bg">@android:color/system_accent1_50</color>
+    <color name="ic_you_p1">@android:color/system_accent1_400</color>
+    <color name="ic_you_p2">@android:color/system_accent2_300</color>
+    <color name="ic_you_p3">@android:color/system_accent3_400</color>
+    <color name="ic_you_p4">@android:color/system_accent1_200</color>
 </resources>

@@ -10,10 +10,17 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animate
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.animation.core.spring
+import kotlinx.coroutines.launch
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -93,7 +100,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -172,6 +178,11 @@ fun ViewerScreen(
     var showInfo by remember { mutableStateOf(false) }
     val current = items[pagerState.currentPage.coerceIn(0, items.lastIndex)]
     val darkIcons = colors.surface.luminance() > 0.5f
+    val scope = rememberCoroutineScope()
+    var drag by remember { mutableFloatStateOf(0f) }
+    var viewHeight by remember { mutableIntStateOf(1) }
+    val dismissPx = with(LocalDensity.current) { 140.dp.toPx() }
+    val backdrop = rememberBackdropState(settings)
 
     ImmersiveEffect(hideBars = !chrome, darkIcons = darkIcons)
     LaunchedEffect(pagerState.currentPage) { zoomed = false }
@@ -180,12 +191,69 @@ fun ViewerScreen(
         Box(
             Modifier
                 .fillMaxSize()
-                .background(Brush.verticalGradient(listOf(colors.surfaceContainerHigh, colors.surface))),
+                .onSizeChanged { viewHeight = it.height }
+                .then(
+                    if (!zoomed) {
+                        // Deslizar hacia abajo para cerrar la foto o el video.
+                        Modifier.pointerInput(Unit) {
+                            val tracker = VelocityTracker()
+                            detectVerticalDragGestures(
+                                onDragStart = { tracker.resetTracking() },
+                                onVerticalDrag = { change, amount ->
+                                    tracker.addPosition(change.uptimeMillis, change.position)
+                                    change.consume()
+                                    drag = (drag + amount).coerceAtLeast(0f)
+                                },
+                                onDragEnd = {
+                                    val velocity = tracker.calculateVelocity().y
+                                    scope.launch {
+                                        if (drag > dismissPx || velocity > 1400f) {
+                                            animate(drag, viewHeight.toFloat(), animationSpec = tween(200)) { value, _ ->
+                                                drag = value
+                                            }
+                                            onClose()
+                                        } else {
+                                            animate(
+                                                drag,
+                                                0f,
+                                                animationSpec = spring(dampingRatio = 0.7f, stiffness = Spring.StiffnessMedium),
+                                            ) { value, _ -> drag = value }
+                                        }
+                                    }
+                                },
+                                onDragCancel = {
+                                    scope.launch {
+                                        animate(drag, 0f) { value, _ -> drag = value }
+                                    }
+                                },
+                            )
+                        }
+                    } else {
+                        Modifier
+                    },
+                ),
         ) {
+            // Fondo que se desvanece al arrastrar, para ver la galería detrás.
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = (1f - drag / (size.height * 0.6f)).coerceIn(0f, 1f) }
+                    .background(Brush.verticalGradient(listOf(colors.surfaceContainerHigh, colors.surface))),
+            )
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        val p = (drag / size.height).coerceIn(0f, 1f)
+                        translationY = drag
+                        scaleX = 1f - 0.28f * p
+                        scaleY = 1f - 0.28f * p
+                    },
+            ) {
             HorizontalPager(
                 state = pagerState,
                 userScrollEnabled = !zoomed,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().backdropSource(backdrop),
                 key = { items[it].uri.toString() },
             ) { page ->
                 val m = items[page]
@@ -215,6 +283,7 @@ fun ViewerScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .backdropBlur(backdrop, colors.surface.copy(alpha = 0.45f))
                         .statusBarsPadding()
                         .padding(horizontal = 4.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -243,6 +312,7 @@ fun ViewerScreen(
                         Icon(Icons.Outlined.Info, contentDescription = "Detalles")
                     }
                 }
+            }
             }
         }
     }

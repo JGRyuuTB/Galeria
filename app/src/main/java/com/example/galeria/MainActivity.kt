@@ -357,12 +357,14 @@ fun GalleryRoot(settings: AppSettings) {
 
             else -> {
                 val inSelection = selected.isNotEmpty() && tab == 0
+                val backdrop = rememberBackdropState(settings)
                 Scaffold(
                     topBar = {
                         if (tab <= 1) {
                             if (inSelection) {
                                 SelectionTopBar(
                                     count = selected.size,
+                                    backdrop = backdrop,
                                     onClose = { selected = emptySet() },
                                     onSelectAll = { selected = filtered.map { it.uri }.toSet() },
                                 ) {
@@ -374,12 +376,23 @@ fun GalleryRoot(settings: AppSettings) {
                                     }
                                 }
                             } else {
-                                TopAppBar(
-                                    title = { Text(if (tab == 0) "Fotos" else "Álbumes") },
-                                    colors = TopAppBarDefaults.topAppBarColors(
-                                        containerColor = MaterialTheme.colorScheme.surface,
+                                Box(
+                                    Modifier.backdropBlur(
+                                        backdrop,
+                                        MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
                                     ),
-                                )
+                                ) {
+                                    TopAppBar(
+                                        title = { Text(if (tab == 0) "Fotos" else "Álbumes") },
+                                        colors = TopAppBarDefaults.topAppBarColors(
+                                            containerColor = if (backdrop.enabled) {
+                                                androidx.compose.ui.graphics.Color.Transparent
+                                            } else {
+                                                MaterialTheme.colorScheme.surface
+                                            },
+                                        ),
+                                    )
+                                }
                             }
                         }
                     },
@@ -394,6 +407,7 @@ fun GalleryRoot(settings: AppSettings) {
                                 items = GalleryNavItems,
                                 selected = tab,
                                 animations = settings.animations,
+                                backdrop = backdrop,
                                 onSelect = {
                                     selected = emptySet()
                                     tab = it
@@ -410,6 +424,7 @@ fun GalleryRoot(settings: AppSettings) {
                         .fillMaxSize()
                         .padding(bottom = padding.calculateBottomPadding())
                     AnimatedContent(
+                        modifier = Modifier.fillMaxSize().backdropSource(backdrop),
                         targetState = tab,
                         transitionSpec = {
                             if (settings.animations) {

@@ -45,7 +45,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
@@ -74,6 +79,7 @@ fun LiquidNavBar(
     animations: Boolean,
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    backdrop: BackdropState? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
     val barColor = scheme.surfaceContainerHighest
@@ -83,7 +89,13 @@ fun LiquidNavBar(
     val r = 26.dp
     val overflow = 30.dp
 
-    BoxWithConstraints(modifier.fillMaxWidth().height(barH + overflow)) {
+    var barPos by remember { mutableStateOf(Offset.Zero) }
+    BoxWithConstraints(
+        modifier
+            .fillMaxWidth()
+            .height(barH + overflow)
+            .onGloballyPositioned { barPos = it.positionInRoot() },
+    ) {
         val density = LocalDensity.current
         val widthPx = with(density) { maxWidth.toPx() }
         val itemW = widthPx / items.size
@@ -145,7 +157,16 @@ fun LiquidNavBar(
                 close()
             }
             val shape = Path.combine(PathOperation.Difference, bar, notch)
-            drawPath(shape, barColor)
+            if (backdrop != null && backdrop.enabled) {
+                clipPath(shape) {
+                    translate(backdrop.origin.x - barPos.x, backdrop.origin.y - barPos.y) {
+                        drawLayer(backdrop.blurred)
+                    }
+                }
+                drawPath(shape, barColor.copy(alpha = 0.55f))
+            } else {
+                drawPath(shape, barColor)
+            }
             drawCircle(bubbleColor, radius = rPx, center = Offset(x, top + (1f - l) * dropPx))
         }
 

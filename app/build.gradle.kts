@@ -12,15 +12,25 @@ android {
         applicationId = "com.example.galeria"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.3"
+        versionCode = 6
+        versionName = "1.4"
+    }
+
+    // Clave fija incluida en el repo: así cada versión nueva se instala encima de la anterior
+    // sin tener que desinstalar (los ajustes se conservan).
+    signingConfigs {
+        create("galeria") {
+            storeFile = file("galeria.keystore")
+            storePassword = "galeria123"
+            keyAlias = "galeria"
+            keyPassword = "galeria123"
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            // Firmado con la clave debug para que el APK sea instalable directamente.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("galeria")
         }
     }
 

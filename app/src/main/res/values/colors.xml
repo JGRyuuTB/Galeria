@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_default_bg">#FFFFFF</color>
-    <color name="ic_you_bg">#3B6FD8</color>
-    <color name="ic_you_fg">#FFFFFF</color>
-    <color name="ic_you_fg2">#FFD54F</color>
+    <color name="ic_you_bg">#FFFFFF</color>
+    <color name="ic_you_p1">#4285F4</color>
+    <color name="ic_you_p2">#34C9A0</color>
+    <color name="ic_you_p3">#9C6EF0</color>
+    <color name="ic_you_p4">#F25C8A</color>
 </resources>

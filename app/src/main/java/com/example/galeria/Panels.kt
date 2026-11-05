@@ -97,6 +97,18 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
                     enabled = canDynamic,
                     onChange = { settings.updateDynamicColor(it) },
                 )
+                val canBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                ChoiceRow(
+                    title = "Desenfoque de la interfaz",
+                    subtitle = if (canBlur) {
+                        "Efecto de cristal en las barras (puede usar más batería)"
+                    } else {
+                        "Requiere Android 12 o superior"
+                    },
+                    options = listOf("Ninguno", "Suave", "Fuerte"),
+                    selected = if (canBlur) settings.blur else 0,
+                    onSelect = { if (canBlur) settings.updateBlur(it) },
+                )
                 SwitchRow(
                     title = "Animaciones",
                     subtitle = "Transiciones y efectos de movimiento",
@@ -164,7 +176,7 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
             }
 
             Text(
-                "Galería 1.3",
+                "Galería 1.4",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 16.dp, bottom = 16.dp),

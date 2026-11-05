@@ -44,6 +44,7 @@ import androidx.compose.material.icons.rounded.Animation
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.BorderStyle
+import androidx.compose.material.icons.rounded.BlurOn
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Collections
@@ -358,6 +359,15 @@ private fun ColorsStep(settings: AppSettings) {
         ) {
             settings.updateMaterialYouIcon(it)
             applyAppIcon(context, it)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Spacer(Modifier.height(12.dp))
+            ToggleCard(
+                title = "Desenfoque",
+                desc = "Efecto de cristal en las barras. Puede usar más batería.",
+                icon = Icons.Rounded.BlurOn,
+                checked = settings.blur > 0,
+            ) { settings.updateBlur(if (it) 1 else 0) }
         }
         FootNote("Puedes cambiarlo después en Ajustes > Apariencia.")
     }

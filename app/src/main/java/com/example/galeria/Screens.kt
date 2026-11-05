@@ -218,8 +218,11 @@ fun SelectionTopBar(
     onClose: () -> Unit,
     onSelectAll: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
+    backdrop: BackdropState? = null,
     actions: @Composable RowScope.() -> Unit,
 ) {
+    val blurOn = backdrop != null && backdrop.enabled
+    Box(Modifier.backdropBlur(backdrop, MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f))) {
     TopAppBar(
         title = { Text(if (count == 1) "1 seleccionado" else "$count seleccionados") },
         navigationIcon = {
@@ -234,11 +237,12 @@ fun SelectionTopBar(
             actions()
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            scrolledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            containerColor = if (blurOn) Color.Transparent else MaterialTheme.colorScheme.secondaryContainer,
+            scrolledContainerColor = if (blurOn) Color.Transparent else MaterialTheme.colorScheme.secondaryContainer,
         ),
         scrollBehavior = scrollBehavior,
     )
+    }
 }
 
 // ------------------------------------------------------------------ Pellizco para cambiar columnas

@@ -5,23 +5,19 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:fillColor="@color/ic_you_fg"
-        android:pathData="M43,27 H65 A16,16 0 0 1 81,43 V65 A16,16 0 0 1 65,81 H43 A16,16 0 0 1 27,65 V43 A16,16 0 0 1 43,27 Z" />
+        android:fillColor="@color/ic_you_p1"
+        android:fillAlpha="0.92"
+        android:pathData="M54,41 m-14.5,0 a14.5,14.5 0 1 0 29.0,0 a14.5,14.5 0 1 0 -29.0,0" />
     <path
-        android:fillColor="@color/ic_you_fg2"
-        android:pathData="M66,41 m-5,0 a5,5 0 1 0 10,0 a5,5 0 1 0 -10,0" />
+        android:fillColor="@color/ic_you_p2"
+        android:fillAlpha="0.92"
+        android:pathData="M67,54 m-14.5,0 a14.5,14.5 0 1 0 29.0,0 a14.5,14.5 0 1 0 -29.0,0" />
     <path
-        android:fillColor="@color/ic_you_bg"
-        android:fillAlpha="0.6"
-        android:strokeColor="@color/ic_you_bg"
-        android:strokeAlpha="0.6"
-        android:strokeWidth="3"
-        android:strokeLineJoin="round"
-        android:pathData="M50,69 L62,54 L74,69 Z" />
+        android:fillColor="@color/ic_you_p3"
+        android:fillAlpha="0.92"
+        android:pathData="M54,67 m-14.5,0 a14.5,14.5 0 1 0 29.0,0 a14.5,14.5 0 1 0 -29.0,0" />
     <path
-        android:fillColor="@color/ic_you_bg"
-        android:strokeColor="@color/ic_you_bg"
-        android:strokeWidth="3"
-        android:strokeLineJoin="round"
-        android:pathData="M34,69 L48,49 L62,69 Z" />
+        android:fillColor="@color/ic_you_p4"
+        android:fillAlpha="0.92"
+        android:pathData="M41,54 m-14.5,0 a14.5,14.5 0 1 0 29.0,0 a14.5,14.5 0 1 0 -29.0,0" />
 </vector>

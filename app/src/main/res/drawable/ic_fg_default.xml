@@ -1,39 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Tarjeta de foto con degradado azul -->
-    <path android:pathData="M43,27 H65 A16,16 0 0 1 81,43 V65 A16,16 0 0 1 65,81 H43 A16,16 0 0 1 27,65 V43 A16,16 0 0 1 43,27 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="27"
-                android:startY="27"
-                android:endX="81"
-                android:endY="81">
-                <item android:offset="0" android:color="#FF62B6FF" />
-                <item android:offset="1" android:color="#FF3A55D8" />
-            </gradient>
-        </aapt:attr>
-    </path>
-    <!-- Sol -->
     <path
-        android:fillColor="#E6FFFFFF"
-        android:pathData="M66,41 m-5,0 a5,5 0 1 0 10,0 a5,5 0 1 0 -10,0" />
-    <!-- Montañas -->
+        android:fillColor="#EB4285F4"
+        android:pathData="M54,41 m-14.5,0 a14.5,14.5 0 1 0 29.0,0 a14.5,14.5 0 1 0 -29.0,0" />
     <path
-        android:fillColor="#A6FFFFFF"
-        android:strokeColor="#A6FFFFFF"
-        android:strokeWidth="3"
-        android:strokeLineJoin="round"
-        android:pathData="M50,69 L62,54 L74,69 Z" />
+        android:fillColor="#EB34C9A0"
+        android:pathData="M67,54 m-14.5,0 a14.5,14.5 0 1 0 29.0,0 a14.5,14.5 0 1 0 -29.0,0" />
     <path
-        android:fillColor="#FFFFFFFF"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="3"
-        android:strokeLineJoin="round"
-        android:pathData="M34,69 L48,49 L62,69 Z" />
+        android:fillColor="#EB9C6EF0"
+        android:pathData="M54,67 m-14.5,0 a14.5,14.5 0 1 0 29.0,0 a14.5,14.5 0 1 0 -29.0,0" />
+    <path
+        android:fillColor="#EBF25C8A"
+        android:pathData="M41,54 m-14.5,0 a14.5,14.5 0 1 0 29.0,0 a14.5,14.5 0 1 0 -29.0,0" />
 </vector>

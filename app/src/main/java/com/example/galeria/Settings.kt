@@ -41,6 +41,14 @@ class AppSettings(context: Context) {
     var materialYouIcon by mutableStateOf(prefs.getBoolean("materialYouIcon", false))
         private set
 
+    var blur by mutableIntStateOf(prefs.getInt("blur", 0))
+        private set
+
+    fun updateBlur(value: Int) {
+        blur = value
+        prefs.edit().putInt("blur", value).apply()
+    }
+
     var onboardingDone by mutableStateOf(prefs.getBoolean("onboardingDone", false))
         private set
 
