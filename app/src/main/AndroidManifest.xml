@@ -8,6 +8,7 @@
         android:maxSdkVersion="32" />
 
     <application
+        android:enableOnBackInvokedCallback="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher_default"
         android:roundIcon="@mipmap/ic_launcher_default"

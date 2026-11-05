@@ -12,8 +12,8 @@ android {
         applicationId = "com.GalleryYou.Pixel"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
-        versionName = "1.5"
+        versionCode = 8
+        versionName = "1.0.0"
     }
 
     // Clave fija incluida en el repo: así cada versión nueva se instala encima de la anterior
@@ -59,7 +59,6 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.animation:animation")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
 
     // Reproductor de video
     implementation("androidx.media3:media3-exoplayer:1.4.1")

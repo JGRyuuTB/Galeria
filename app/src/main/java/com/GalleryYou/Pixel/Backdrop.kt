@@ -15,6 +15,10 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.TileMode
@@ -63,6 +67,8 @@ fun Modifier.backdropSource(state: BackdropState): Modifier = this
             drawLayer(state.source)
             if (state.appliedRadius != state.radius) {
                 state.blurred.renderEffect = BlurEffect(state.radius, state.radius, TileMode.Clamp)
+                // Un poco más de saturación: el fondo detrás del cristal se ve más vivo.
+                state.blurred.colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(1.45f) })
                 state.appliedRadius = state.radius
             }
             state.blurred.record { drawLayer(state.source) }
@@ -87,6 +93,72 @@ fun Modifier.backdropBlur(state: BackdropState?, tint: Color, corner: Dp = 0.dp)
                     drawLayer(state.blurred)
                 }
                 drawRect(tint)
+            }
+        }
+}
+
+/**
+ * Superficie de "cristal líquido": fondo desenfocado y saturado, velo de color, borde con brillo
+ * especular y un reflejo suave arriba. Sin desenfoque activado usa [fallback], casi opaco, con
+ * el mismo borde y reflejo para conservar el aspecto.
+ */
+@Composable
+fun Modifier.glassSurface(
+    state: BackdropState?,
+    tint: Color,
+    fallback: Color,
+    corner: Dp,
+    border: Boolean = true,
+    extendBottom: Boolean = false,
+): Modifier {
+    val blurOn = state != null && state.enabled
+    var pos by remember { mutableStateOf(Offset.Zero) }
+    return this
+        .onGloballyPositioned { pos = it.positionInRoot() }
+        .drawBehind {
+            val r = corner.toPx()
+            val h = if (extendBottom) size.height + 48.dp.toPx() else size.height
+            val path = Path().apply {
+                addRoundRect(RoundRect(0f, 0f, size.width, h, CornerRadius(r)))
+            }
+            if (blurOn && state != null) {
+                clipPath(path) {
+                    translate(left = state.origin.x - pos.x, top = state.origin.y - pos.y) {
+                        drawLayer(state.blurred)
+                    }
+                    drawRect(tint, size = androidx.compose.ui.geometry.Size(size.width, h))
+                }
+            } else {
+                drawPath(path, fallback)
+            }
+            // Reflejo suave en la mitad superior.
+            clipPath(path) {
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        listOf(Color.White.copy(alpha = 0.16f), Color.Transparent),
+                        startY = 0f,
+                        endY = h * 0.55f,
+                    ),
+                    size = androidx.compose.ui.geometry.Size(size.width, h),
+                )
+            }
+            if (border) {
+                val sw = 1.3.dp.toPx()
+                drawRoundRect(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.60f),
+                            Color.White.copy(alpha = 0.06f),
+                            Color.White.copy(alpha = 0.32f),
+                        ),
+                        start = Offset.Zero,
+                        end = Offset(size.width, h),
+                    ),
+                    topLeft = Offset(sw / 2f, sw / 2f),
+                    size = androidx.compose.ui.geometry.Size(size.width - sw, h - sw),
+                    cornerRadius = CornerRadius(r - sw / 2f),
+                    style = Stroke(width = sw),
+                )
             }
         }
 }

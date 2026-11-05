@@ -17,11 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.clickable
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.outlined.DeleteForever
-import androidx.compose.material.icons.outlined.DeleteSweep
-import androidx.compose.material.icons.outlined.RestoreFromTrash
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -65,7 +60,7 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
                 title = { Text("Ajustes") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Volver")
+                        Icon(AppIcons.ArrowBack, contentDescription = "Volver")
                     }
                 },
             )
@@ -175,12 +170,30 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
                 )
             }
 
-            Text(
-                "Galería 1.5",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 16.dp, bottom = 16.dp),
-            )
+            SettingsGroup("Acerca de") {
+                ListItem(
+                    headlineContent = { Text("Galería") },
+                    supportingContent = { Text("Versión 1.0.0 · Estable") },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+                ListItem(
+                    headlineContent = { Text("Paquete") },
+                    supportingContent = { Text("com.GalleryYou.Pixel") },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+                ListItem(
+                    headlineContent = { Text("Código abierto") },
+                    supportingContent = {
+                        Text(
+                            "Licencia MIT. Hecha con Jetpack Compose, Material 3, Media3 y Coil " +
+                                "(todos con licencia Apache 2.0).",
+                        )
+                    },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
         }
     }
 }
@@ -290,10 +303,10 @@ fun TrashScreen(
                         onRestore(picked)
                         selected = emptySet()
                     }) {
-                        Icon(Icons.Outlined.RestoreFromTrash, contentDescription = "Restaurar")
+                        Icon(AppIcons.TrashRestore, contentDescription = "Restaurar")
                     }
                     IconButton(onClick = { confirm = picked }) {
-                        Icon(Icons.Outlined.DeleteForever, contentDescription = "Eliminar definitivamente")
+                        Icon(AppIcons.TrashX, contentDescription = "Eliminar definitivamente")
                     }
                 }
             } else {
@@ -301,13 +314,13 @@ fun TrashScreen(
                     title = { Text("Papelera") },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Volver")
+                            Icon(AppIcons.ArrowBack, contentDescription = "Volver")
                         }
                     },
                     actions = {
                         if (items.isNotEmpty()) {
                             IconButton(onClick = { confirm = items }) {
-                                Icon(Icons.Outlined.DeleteSweep, contentDescription = "Vaciar papelera")
+                                Icon(AppIcons.Trash, contentDescription = "Vaciar papelera")
                             }
                         }
                     },

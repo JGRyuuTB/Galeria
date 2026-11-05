@@ -3,6 +3,7 @@ package com.GalleryYou.Pixel
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.Context
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -38,10 +39,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.outlined.DeleteOutline
-import androidx.compose.material.icons.outlined.DriveFileMove
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -358,6 +355,7 @@ fun GalleryRoot(settings: AppSettings) {
             else -> {
                 val inSelection = selected.isNotEmpty() && tab == 0
                 val backdrop = rememberBackdropState(settings)
+                val cameraContext = LocalContext.current
                 Scaffold(
                     topBar = {
                         if (tab <= 1) {
@@ -369,10 +367,10 @@ fun GalleryRoot(settings: AppSettings) {
                                     onSelectAll = { selected = filtered.map { it.uri }.toSet() },
                                 ) {
                                     IconButton(onClick = { moveItems = selectedItems }) {
-                                        Icon(Icons.Outlined.DriveFileMove, contentDescription = "Mover a álbum")
+                                        Icon(AppIcons.Folder, contentDescription = "Mover a álbum")
                                     }
                                     IconButton(onClick = { trashItems(selectedItems) }) {
-                                        Icon(Icons.Outlined.DeleteOutline, contentDescription = "Mover a la papelera")
+                                        Icon(AppIcons.Trash, contentDescription = "Mover a la papelera")
                                     }
                                 }
                             } else {
@@ -401,13 +399,14 @@ fun GalleryRoot(settings: AppSettings) {
                             Modifier
                                 .fillMaxWidth()
                                 .navigationBarsPadding()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
                         ) {
-                            LiquidNavBar(
+                            GlassNavBar(
                                 items = GalleryNavItems,
                                 selected = tab,
                                 animations = settings.animations,
                                 backdrop = backdrop,
+                                onCamera = { launchCamera(cameraContext) },
                                 onSelect = {
                                     selected = emptySet()
                                     tab = it
@@ -537,10 +536,10 @@ fun AlbumDetail(
                     onSelectAll = onSelectAll,
                 ) {
                     IconButton(onClick = onMove) {
-                        Icon(Icons.Outlined.DriveFileMove, contentDescription = "Mover a álbum")
+                        Icon(AppIcons.Folder, contentDescription = "Mover a álbum")
                     }
                     IconButton(onClick = onTrash) {
-                        Icon(Icons.Outlined.DeleteOutline, contentDescription = "Mover a la papelera")
+                        Icon(AppIcons.Trash, contentDescription = "Mover a la papelera")
                     }
                 }
             } else {
@@ -548,7 +547,7 @@ fun AlbumDetail(
                     title = { Text(album.name) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Volver")
+                            Icon(AppIcons.ArrowBack, contentDescription = "Volver")
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -571,5 +570,16 @@ fun AlbumDetail(
             onClick = onClick,
             onLongClick = onLongClick,
         )
+    }
+}
+
+/** Abre la app de cámara del sistema (no necesita permisos). */
+private fun launchCamera(context: Context) {
+    try {
+        context.startActivity(
+            Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
+    } catch (e: Exception) {
+        Toast.makeText(context, "No se encontró una app de cámara", Toast.LENGTH_SHORT).show()
     }
 }

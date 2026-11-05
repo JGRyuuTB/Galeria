@@ -39,25 +39,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Animation
-import androidx.compose.material.icons.rounded.Apps
-import androidx.compose.material.icons.rounded.ArrowForward
-import androidx.compose.material.icons.rounded.BorderStyle
-import androidx.compose.material.icons.rounded.BlurOn
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Collections
-import androidx.compose.material.icons.rounded.DarkMode
-import androidx.compose.material.icons.rounded.Image
-import androidx.compose.material.icons.rounded.LightMode
-import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.PhoneAndroid
-import androidx.compose.material.icons.rounded.PhotoAlbum
-import androidx.compose.material.icons.rounded.PlayCircle
-import androidx.compose.material.icons.rounded.RoundedCorner
-import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.Videocam
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -192,7 +173,7 @@ private fun BottomBar(step: Int, canNext: Boolean, onNext: () -> Unit) {
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    imageVector = if (last) Icons.Rounded.Check else Icons.Rounded.ArrowForward,
+                    imageVector = if (last) AppIcons.Check else AppIcons.ArrowForward,
                     contentDescription = if (last) "Empezar" else "Siguiente",
                     tint = if (canNext) scheme.onPrimary else scheme.onSurfaceVariant,
                     modifier = Modifier.size(28.dp),
@@ -229,7 +210,7 @@ private fun WelcomeStep(animate: Boolean) {
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             Surface(shape = CircleShape, color = scheme.surfaceContainerHigh) {
                 Text(
-                    "β  Beta",
+                    "Versión 1.0 · Estable",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(horizontal = 22.dp, vertical = 10.dp),
@@ -264,11 +245,11 @@ private fun PermissionStep(
     ) {
         Spacer(Modifier.height(24.dp))
         ClusterIllustration(
-            center = Icons.Rounded.Image,
-            a = Icons.Rounded.Videocam,
-            b = Icons.Rounded.Collections,
-            c = Icons.Rounded.PhotoAlbum,
-            d = Icons.Rounded.Share,
+            center = AppIcons.Image,
+            a = AppIcons.Video,
+            b = AppIcons.Collections,
+            c = AppIcons.Collections,
+            d = AppIcons.Share,
             animate = animate,
         )
         Spacer(Modifier.height(28.dp))
@@ -278,7 +259,7 @@ private fun PermissionStep(
                     Modifier.padding(horizontal = 28.dp, vertical = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(Icons.Rounded.CheckCircle, null, tint = scheme.onPrimaryContainer)
+                    Icon(AppIcons.CheckCircle, null, tint = scheme.onPrimaryContainer)
                     Spacer(Modifier.width(10.dp))
                     Text(
                         "Permiso concedido",
@@ -311,7 +292,7 @@ private fun ThemeStep(settings: AppSettings) {
         OptionCard(
             title = "Oscuro",
             desc = "El aspecto oscuro Material 3, cómodo para los ojos.",
-            icon = Icons.Rounded.DarkMode,
+            icon = AppIcons.Moon,
             selected = settings.themeMode == 2,
             badge = "Recomendado",
         ) { settings.updateThemeMode(2) }
@@ -319,14 +300,14 @@ private fun ThemeStep(settings: AppSettings) {
         OptionCard(
             title = "Claro",
             desc = "Un aspecto Material 3 más luminoso en toda la app.",
-            icon = Icons.Rounded.LightMode,
+            icon = AppIcons.Sun,
             selected = settings.themeMode == 1,
         ) { settings.updateThemeMode(1) }
         Spacer(Modifier.height(12.dp))
         OptionCard(
             title = "Seguir el sistema",
             desc = "Coincidir con el tema del teléfono.",
-            icon = Icons.Rounded.PhoneAndroid,
+            icon = AppIcons.Phone,
             selected = settings.themeMode == 0,
         ) { settings.updateThemeMode(0) }
         FootNote("Puedes cambiarlo después en Ajustes > Apariencia.")
@@ -346,7 +327,7 @@ private fun ColorsStep(settings: AppSettings) {
             } else {
                 "Disponible desde Android 12."
             },
-            icon = Icons.Rounded.Palette,
+            icon = AppIcons.Palette,
             checked = settings.dynamicColor && dynamicAvailable,
             enabled = dynamicAvailable,
         ) { settings.updateDynamicColor(it) }
@@ -354,7 +335,7 @@ private fun ColorsStep(settings: AppSettings) {
         ToggleCard(
             title = "Icono Material You",
             desc = "El icono de la app toma los colores de tu fondo.",
-            icon = Icons.Rounded.Apps,
+            icon = AppIcons.Apps,
             checked = settings.materialYouIcon,
         ) {
             settings.updateMaterialYouIcon(it)
@@ -365,7 +346,7 @@ private fun ColorsStep(settings: AppSettings) {
             ToggleCard(
                 title = "Desenfoque",
                 desc = "Efecto de cristal en las barras. Puede usar más batería.",
-                icon = Icons.Rounded.BlurOn,
+                icon = AppIcons.Blur,
                 checked = settings.blur > 0,
             ) { settings.updateBlur(if (it) 1 else 0) }
         }
@@ -459,7 +440,7 @@ private fun LayoutStep(settings: AppSettings) {
         ToggleCard(
             title = "Esquinas redondeadas",
             desc = "Miniaturas con bordes suaves.",
-            icon = Icons.Rounded.RoundedCorner,
+            icon = AppIcons.Corner,
             checked = settings.roundedCorners,
         ) { settings.updateRoundedCorners(it) }
         FootNote("Puedes cambiarlo después en Ajustes > Apariencia.")
@@ -473,14 +454,14 @@ private fun PlayerStep(settings: AppSettings) {
         ToggleCard(
             title = "Reproducción automática",
             desc = "Los videos empiezan al abrirlos.",
-            icon = Icons.Rounded.PlayCircle,
+            icon = AppIcons.PlayCircle,
             checked = settings.autoplay,
         ) { settings.updateAutoplay(it) }
         Spacer(Modifier.height(12.dp))
         ToggleCard(
             title = "Animaciones",
             desc = "Transiciones y efectos en toda la app.",
-            icon = Icons.Rounded.Animation,
+            icon = AppIcons.Sparkle,
             checked = settings.animations,
         ) { settings.updateAnimations(it) }
         Spacer(Modifier.height(20.dp))
@@ -490,15 +471,15 @@ private fun PlayerStep(settings: AppSettings) {
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.fillMaxWidth().padding(start = 8.dp, bottom = 10.dp),
         )
-        OptionCard("Sin borde", "Un panel limpio y simple.", Icons.Rounded.BorderStyle, settings.playerBorder == 0) {
+        OptionCard("Sin borde", "Un panel limpio y simple.", AppIcons.Dashed, settings.playerBorder == 0) {
             settings.updatePlayerBorder(0)
         }
         Spacer(Modifier.height(10.dp))
-        OptionCard("Color del tema", "Borde fijo con el color principal.", Icons.Rounded.BorderStyle, settings.playerBorder == 1) {
+        OptionCard("Color del tema", "Borde fijo con el color principal.", AppIcons.Dashed, settings.playerBorder == 1) {
             settings.updatePlayerBorder(1)
         }
         Spacer(Modifier.height(10.dp))
-        OptionCard("Animado", "El borde cambia de color al reproducir.", Icons.Rounded.BorderStyle, settings.playerBorder == 2, badge = "Recomendado") {
+        OptionCard("Animado", "El borde cambia de color al reproducir.", AppIcons.Dashed, settings.playerBorder == 2, badge = "Recomendado") {
             settings.updatePlayerBorder(2)
         }
         FootNote("Puedes cambiarlo después en Ajustes > Reproductor.")
@@ -513,11 +494,11 @@ private fun DoneStep(animate: Boolean) {
     ) {
         Spacer(Modifier.height(24.dp))
         ClusterIllustration(
-            center = Icons.Rounded.CheckCircle,
-            a = Icons.Rounded.Image,
-            b = Icons.Rounded.Videocam,
-            c = Icons.Rounded.Collections,
-            d = Icons.Rounded.PhotoAlbum,
+            center = AppIcons.CheckCircle,
+            a = AppIcons.Image,
+            b = AppIcons.Video,
+            c = AppIcons.Collections,
+            d = AppIcons.Collections,
             animate = animate,
         )
     }
@@ -636,7 +617,7 @@ private fun OptionCard(
             contentAlignment = Alignment.Center,
         ) {
             if (selected) {
-                Icon(Icons.Rounded.Check, null, tint = scheme.onPrimary, modifier = Modifier.size(22.dp))
+                Icon(AppIcons.Check, null, tint = scheme.onPrimary, modifier = Modifier.size(22.dp))
             } else {
                 Box(Modifier.size(10.dp).clip(CircleShape).background(scheme.onSurfaceVariant.copy(alpha = 0.5f)))
             }

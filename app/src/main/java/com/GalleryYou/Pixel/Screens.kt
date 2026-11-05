@@ -46,13 +46,6 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.PhotoLibrary
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -152,7 +145,7 @@ fun PermissionScreen(onRequest: () -> Unit, onSettings: () -> Unit) {
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                Icons.Outlined.PhotoLibrary,
+                AppIcons.Image,
                 contentDescription = null,
                 modifier = Modifier.size(48.dp),
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -202,7 +195,7 @@ fun FilterRow(selected: Int, onSelect: (Int) -> Unit) {
                 onClick = { onSelect(index) },
                 label = { Text(label) },
                 leadingIcon = if (selected == index) {
-                    { Icon(Icons.Rounded.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                    { Icon(AppIcons.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
                 } else {
                     null
                 },
@@ -227,12 +220,12 @@ fun SelectionTopBar(
         title = { Text(if (count == 1) "1 seleccionado" else "$count seleccionados") },
         navigationIcon = {
             IconButton(onClick = onClose) {
-                Icon(Icons.Outlined.Close, contentDescription = "Cancelar selección")
+                Icon(AppIcons.Close, contentDescription = "Cancelar selección")
             }
         },
         actions = {
             IconButton(onClick = onSelectAll) {
-                Icon(Icons.Outlined.SelectAll, contentDescription = "Seleccionar todo")
+                Icon(AppIcons.SelectAll, contentDescription = "Seleccionar todo")
             }
             actions()
         },
@@ -438,7 +431,7 @@ fun Thumb(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        Icons.Rounded.PlayArrow,
+                        AppIcons.Play,
                         contentDescription = null,
                         modifier = Modifier.size(14.dp),
                         tint = Color.White,
@@ -489,7 +482,7 @@ fun Thumb(
                     exit = fadeOut() + scaleOut(targetScale = 0.3f),
                 ) {
                     Icon(
-                        Icons.Rounded.Check,
+                        AppIcons.Check,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.onPrimary,
@@ -627,7 +620,7 @@ fun MoveSheet(
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
-                                Icons.Outlined.Add,
+                                AppIcons.Add,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             )
