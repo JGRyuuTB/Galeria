@@ -16,11 +16,11 @@
 </p>
 
 <p align="center">
-    <a href="https://github.com/theovilardo/GalleryYou/releases/latest">
-        <img src="https://img.shields.io/github/v/release/theovilardo/GalleryYou?include_prereleases&logo=github&style=for-the-badge&label=Latest%20Release" alt="Latest Release">
+    <a href="https://github.com/JGRyuuTB/Galeria/releases/latest">
+        <img src="https://img.shields.io/github/v/release/JGRyuuTB/Galeria?include_prereleases&logo=github&style=for-the-badge&label=Latest%20Release" alt="Latest Release">
     </a>
-    <a href="https://github.com/theovilardo/GalleryYou/releases">
-        <img src="https://img.shields.io/github/downloads/theovilardo/GalleryYou/total?logo=github&style=for-the-badge" alt="Total Downloads">
+    <a href="https://github.com/JGRyuuTB/Galeria/releases">
+        <img src="https://img.shields.io/github/downloads/JGRyuuTB/Galeria/total?logo=github&style=for-the-badge" alt="Total Downloads">
     </a>
     <img src="https://img.shields.io/badge/Android-11%2B-green?style=for-the-badge&logo=android" alt="Android 11+">
     <img src="https://img.shields.io/badge/Kotlin-100%25-purple?style=for-the-badge&logo=kotlin" alt="Kotlin">
@@ -29,15 +29,15 @@
 ---
 
 ## ‼️ DISCLAIMER
-- No fork of this project will receive support. If you use a fork, please ask the maintainer of that fork for support.
+- No fork of this project will receive support. If you use a fork, ask the maintainer of that fork to support you.
 
 ---
 
 ## ✨ Features
 
 ### 🎨 Modern UI/UX
-- **Material You** - Dynamic color theming that seamlessly adapts to your wallpaper
-- **Smooth Animations** - Fluid layout transitions, gesture controls, and micro-interactions
+- **Material You** - Dynamic color theming that seamlessly adapts to your system wallpaper
+- **Smooth Animations** - Fluid image transitions, gesture controls, and micro-interactions
 - **Customizable Interface** - Adjust grid column sizes, corner radius, and navigation bar styles
 - **Dark/Light Theme** - Automatic theme switching matching your system settings
 - **Adaptive Palette** - Dynamic color extraction from your photos and media covers
@@ -95,13 +95,13 @@
 
 1. **Clone the repository**
    ```sh
-   git clone https://github.com/theovilardo/GalleryYou.git
+   git clone https://github.com/JGRyuuTB/Galeria.git
    ```
 
 2. **Open in Android Studio**
    - Open Android Studio
    - Select "Open an Existing Project"
-   - Navigate to the cloned `GalleryYou` directory
+   - Navigate to the cloned `Galeria` directory
 
 3. **Sync and Build**
    - Wait for Gradle to sync dependencies
@@ -116,7 +116,7 @@
 ## ⬇️ Download
 
 <p align="center">
-  <a href="https://github.com/theovilardo/GalleryYou/releases/latest">
+  <a href="https://github.com/JGRyuuTB/Galeria/releases/latest">
     <img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/main/get-it-on-github.png" alt="Get it on GitHub" height="60">
   </a>
 </p>
@@ -158,10 +158,10 @@ Contributions are welcome! Feel free to open issues or submit Pull Requests.
 
 ## 📄 License
 
-This project is licensed under a Proprietary License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/theovilardo">theovilardo</a>
+  Made with ❤️ by <a href="https://github.com/JGRyuuTB">JGRyuuTB</a>
 </p>
