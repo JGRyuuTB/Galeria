@@ -1,172 +1,172 @@
 # Pixel Gallery 🖼️
 
 <p align="center">
-  <b>Galería de fotos y videos de código abierto para Android</b><br>
-  Con el estilo de las apps nativas de Pixel, hecha con Jetpack Compose y Material Design 3
+  <b>An open-source photo and video gallery for Android</b><br>
+  Styled after native Pixel apps, built with Jetpack Compose and Material Design 3
 </p>
 
 <p align="center">
-  <img src="assets/screenshot1.png" width="23%" alt="Fotos">
-  <img src="assets/screenshot2.png" width="23%" alt="Visor de video">
-  <img src="assets/screenshot3.png" width="23%" alt="Ajustes">
-  <img src="assets/screenshot4.png" width="23%" alt="Acerca de">
+  <img src="app/screenshot1.png" width="23%" alt="Photos">
+  <img src="app/screenshot2.png" width="23%" alt="Video viewer">
+  <img src="app/screenshot3.png" width="23%" alt="Settings">
+  <img src="app/screenshot4.png" width="23%" alt="About">
 </p>
 
 <p align="center">
-  <a href="https://github.com/JGRyuuTB/Galeria/releases/latest"><img src="https://img.shields.io/github/v/release/JGRyuuTB/Galeria?include_prereleases&logo=github&style=for-the-badge&label=%C3%9Altima%20versi%C3%B3n" alt="Última versión"></a>
-  <a href="https://github.com/JGRyuuTB/Galeria/releases"><img src="https://img.shields.io/github/downloads/JGRyuuTB/Galeria/total?logo=github&style=for-the-badge" alt="Descargas"></a>
+  <a href="https://github.com/JGRyuuTB/Galeria/releases/latest"><img src="https://img.shields.io/github/v/release/JGRyuuTB/Galeria?include_prereleases&logo=github&style=for-the-badge&label=Latest%20version" alt="Latest version"></a>
+  <a href="https://github.com/JGRyuuTB/Galeria/releases"><img src="https://img.shields.io/github/downloads/JGRyuuTB/Galeria/total?logo=github&style=for-the-badge" alt="Downloads"></a>
   <img src="https://img.shields.io/badge/Android-8.0%2B-green?style=for-the-badge&logo=android" alt="Android 8.0+">
   <img src="https://img.shields.io/badge/Kotlin-100%25-purple?style=for-the-badge&logo=kotlin" alt="Kotlin">
-  <img src="https://img.shields.io/badge/Licencia-MIT-blue?style=for-the-badge" alt="MIT">
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT">
 </p>
 
 ---
 
-## ✨ Características
+## ✨ Features
 
-### 🎨 Interfaz moderna
+### 🎨 Modern UI/UX
 
-- **Material You**: colores dinámicos que se adaptan a tu fondo de pantalla.
-- **Barra de navegación flotante de cristal** con desenfoque opcional (Ninguno / Suave / Fuerte).
-- **Animaciones fluidas**: transiciones y efectos de movimiento que puedes desactivar.
-- **Tema claro, oscuro o del sistema**.
-- **Esquinas redondeadas** en las miniaturas y borde personalizable en el panel del reproductor.
-- **Icono Material You** que toma los colores de tu fondo de pantalla (o icono por defecto).
-- **Retroceso predictivo** de Android.
+- **Material You**: dynamic colors that adapt to your wallpaper.
+- **Floating glass navigation bar** with optional blur (None / Soft / Strong).
+- **Smooth animations**: transitions and motion effects you can turn off.
+- **Light, dark or system theme.**
+- **Rounded corners** on thumbnails and a customizable border on the player panel.
+- **Material You app icon** that picks up your wallpaper colors (or the default icon).
+- **Predictive back** gesture support.
 
-### 📷 Fotos y álbumes
+### 📷 Photos & Albums
 
-- **Cuadrícula fluida** con precarga de miniaturas.
-- **Pellizca la pantalla** para cambiar el número de columnas (2 a 5).
-- **Columnas independientes** para Fotos y para Álbumes.
-- **Espacio entre miniaturas** configurable: Ninguno, Pequeño o Grande.
-- **Álbumes** y opción de mover fotos entre ellos.
+- **Fluid grid** with thumbnail preloading.
+- **Pinch to zoom the grid** and change the number of columns (2 to 5).
+- **Separate column settings** for Photos and Albums.
+- **Configurable thumbnail spacing**: None, Small or Large.
+- **Albums**, with the option to move photos between them.
 
-### 🔍 Visor
+### 🔍 Viewer
 
-- **Zoom** en fotos.
-- **Reproductor de video propio**: velocidad de reproducción, saltos de 10 s, volumen y barra de progreso.
-- **Reproducir al abrir**: los videos pueden empezar solos.
-- **Desliza hacia abajo** para cerrar una foto o un video.
-- Acciones rápidas: compartir, eliminar y ver detalles.
+- **Zoom** on photos.
+- **Built-in video player**: playback speed, 10-second skips, volume and a progress bar.
+- **Play on open**: videos can start automatically.
+- **Swipe down** to close a photo or video.
+- Quick actions: share, delete and view details.
 
-### 🗑️ Papelera
+### 🗑️ Trash
 
-- Eliminar con restauración posterior.
-- Borrado definitivo y vaciado de la papelera.
-- Requiere Android 11 o superior.
+- Delete with the option to restore later.
+- Permanent deletion and empty trash.
+- Requires Android 11 or higher.
 
-### 🔒 Privacidad
+### 🔒 Privacy
 
-- **Sin anuncios.**
-- **Sin rastreadores.**
-- **Sin conexión a internet**: la app no necesita ni pide el permiso de red.
+- **No ads.**
+- **No trackers.**
+- **No internet connection**: the app doesn't need or request the network permission.
 
 ---
 
-## 🛠️ Tecnologías
+## 🛠️ Tech Stack
 
-| Categoría | Tecnología |
+| Category | Technology |
 |---|---|
-| **Lenguaje** | [Kotlin](https://kotlinlang.org/) 100% |
-| **Interfaz** | [Jetpack Compose](https://developer.android.com/jetpack/compose) |
-| **Diseño** | [Material Design 3](https://m3.material.io/) |
-| **Reproductor de video** | [Media3 ExoPlayer](https://developer.android.com/guide/topics/media/media3) |
-| **Miniaturas** | [Coil](https://coil-kt.github.io/coil/) + coil-video |
-| **Compilación** | Gradle (Kotlin DSL) + GitHub Actions |
+| **Language** | [Kotlin](https://kotlinlang.org/) 100% |
+| **UI Framework** | [Jetpack Compose](https://developer.android.com/jetpack/compose) |
+| **Design System** | [Material Design 3](https://m3.material.io/) |
+| **Video Player** | [Media3 ExoPlayer](https://developer.android.com/guide/topics/media/media3) |
+| **Thumbnails** | [Coil](https://coil-kt.github.io/coil/) + coil-video |
+| **Build** | Gradle (Kotlin DSL) + GitHub Actions |
 
 ---
 
-## 📱 Requisitos
+## 📱 Requirements
 
-- **Android 8.0** (API 26) o superior.
-- **Android 12+** para el desenfoque de cristal.
-- **Android 11+** para la papelera.
-
----
-
-## ⬇️ Descargar
-
-Descarga el APK desde la sección de [Releases](https://github.com/JGRyuuTB/Galeria/releases/latest).
-
-También puedes enterarte de las nuevas versiones en el canal de Telegram: [Dragon's Bastion](https://t.me/dragonsbastion).
+- **Android 8.0** (API 26) or higher.
+- **Android 12+** for the glass blur effect.
+- **Android 11+** for the trash.
 
 ---
 
-## 🚀 Compilar
+## ⬇️ Download
 
-El proyecto se compila automáticamente con GitHub Actions (`.github/workflows/build-apk.yml`):
+Download the APK from the [Releases](https://github.com/JGRyuuTB/Galeria/releases/latest) page.
 
-1. Haz push a `main` y descarga el artefacto `Galeria-apk` desde la pestaña **Actions**.
-2. Para publicar una versión, crea una etiqueta `v1.0.0` y súbela: el APK se adjunta al Release.
+You can also follow new versions on the Telegram channel: [Dragon's Bastion](https://t.me/dragonsbastion).
 
-En local:
+---
+
+## 🚀 Build
+
+The project is built automatically with GitHub Actions (`.github/workflows/build-apk.yml`):
+
+1. Push to `main` and download the `Galeria-apk` artifact from the **Actions** tab.
+2. To publish a release, create a `v1.0.0` tag and push it: the APK is attached to the Release.
+
+Locally:
 
 ```bash
 git clone https://github.com/JGRyuuTB/Galeria.git
 cd Galeria
-gradle assembleRelease   # requiere JDK 17
+gradle assembleRelease   # requires JDK 17
 ```
 
 ---
 
-## 📂 Estructura del proyecto
+## 📂 Project Structure
 
 ```
 app/src/main/java/com/GalleryYou/Pixel/
-├── MainActivity.kt   # Actividad principal
-├── Nav.kt            # Navegación y barra flotante
-├── Screens.kt        # Pantallas de Fotos, Álbumes y Papelera
-├── Viewer.kt         # Visor de fotos y reproductor de video
-├── Settings.kt       # Ajustes y preferencias
-├── About.kt          # Pantalla "Acerca de"
-├── Onboarding.kt     # Bienvenida de primer uso
-├── Panels.kt         # Paneles y diálogos
-├── Backdrop.kt       # Efecto de desenfoque tipo cristal
-├── MediaRepo.kt      # Acceso a fotos y videos
-├── Thumbs.kt         # Miniaturas
-├── AppIcons.kt       # Set de iconos propio
-└── Theme.kt          # Colores y tema
+├── MainActivity.kt   # Main activity
+├── Nav.kt            # Navigation and floating bar
+├── Screens.kt        # Photos, Albums and Trash screens
+├── Viewer.kt         # Photo viewer and video player
+├── Settings.kt       # Settings and preferences
+├── About.kt          # "About" screen
+├── Onboarding.kt     # First-run welcome
+├── Panels.kt         # Panels and dialogs
+├── Backdrop.kt       # Glass blur effect
+├── MediaRepo.kt      # Photo and video access
+├── Thumbs.kt         # Thumbnails
+├── AppIcons.kt       # Custom icon set
+└── Theme.kt          # Colors and theme
 ```
 
 ---
 
-## 🔐 Permisos
+## 🔐 Permissions
 
-| Permiso | Para qué |
+| Permission | Purpose |
 |---|---|
-| Fotos y videos | Mostrar tu colección |
+| Photos and videos | Show your collection |
 
 ---
 
-## 🤝 Contribuir
+## 🤝 Contributing
 
-¡Las contribuciones son bienvenidas!
+Contributions are welcome!
 
-1. Haz un fork del proyecto.
-2. Crea tu rama (`git checkout -b feature/MiMejora`).
-3. Haz commit de tus cambios (`git commit -m 'Agrego MiMejora'`).
-4. Sube la rama (`git push origin feature/MiMejora`).
-5. Abre un Pull Request.
-
----
-
-## 📝 Registro de cambios
-
-Mira el [CHANGELOG](CHANGELOG.md) para ver las novedades de cada versión.
+1. Fork the project.
+2. Create your feature branch (`git checkout -b feature/MyFeature`).
+3. Commit your changes (`git commit -m 'Add MyFeature'`).
+4. Push to the branch (`git push origin feature/MyFeature`).
+5. Open a Pull Request.
 
 ---
 
-## 📄 Licencia
+## 📝 Changelog
 
-Este proyecto está bajo la licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
+See the [CHANGELOG](CHANGELOG.md) for what's new in each version.
 
 ---
 
-## 📬 Contacto
+## 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 📬 Contact
 
 - GitHub: [JGRyuuTB](https://github.com/JGRyuuTB)
 - Telegram: [@JG_ryuu](https://t.me/JG_ryuu)
-- Canal: [Dragon's Bastion](https://t.me/dragonsbastion)
+- Channel: [Dragon's Bastion](https://t.me/dragonsbastion)
 
-Pixel Gallery, hecha con ❤️ por **JG Ryuu**
+Pixel Gallery, made with ❤️ by **JG Ryuu**
