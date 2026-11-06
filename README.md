@@ -17,8 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/JGRyuuTB/Pixel-gallery-You/releases/latest"><img src="https://img.shields.io/github/v/release/JGRyuuTB/Pixel-gallery-You?include_prereleases&logo=github&style=for-the-badge&label=Latest%20version" alt="Latest version"></a>
-  <a href="https://github.com/JGRyuuTB/Pixel-gallery-You/releases"><img src="https://img.shields.io/github/downloads/JGRyuuTB/Pixel-gallery-You/total?logo=github&style=for-the-badge" alt="Downloads"></a>
+  <a href="https://github.com/JGRyuuTB/Pixel-Gallery/releases/latest"><img src="https://img.shields.io/github/v/release/JGRyuuTB/Pixel-Gallery?include_prereleases&logo=github&style=for-the-badge&label=Latest%20version" alt="Latest version"></a>
+  <a href="https://github.com/JGRyuuTB/Pixel-Gallery/releases"><img src="https://img.shields.io/github/downloads/JGRyuuTB/Pixel-Gallery/total?logo=github&style=for-the-badge" alt="Downloads"></a>
   <img src="https://img.shields.io/badge/Android-8.0%2B-green?style=for-the-badge&logo=android" alt="Android 8.0+">
   <img src="https://img.shields.io/badge/Kotlin-100%25-purple?style=for-the-badge&logo=kotlin" alt="Kotlin">
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT">
@@ -92,7 +92,7 @@
 
 ## ⬇️ Download
 
-Download the APK from the [Releases](https://github.com/JGRyuuTB/Pixel-gallery-You/releases/latest) page.
+Download the APK from the [Releases](https://github.com/JGRyuuTB/Pixel-Gallery/releases/latest) page.
 
 You can also follow new versions on the Telegram channel: [Dragon's Bastion](https://t.me/dragonsbastion).
 
@@ -108,8 +108,8 @@ The project is built automatically with GitHub Actions (`.github/workflows/build
 Locally:
 
 ```bash
-git clone https://github.com/JGRyuuTB/Pixel-gallery-You.git
-cd Pixel-gallery-You
+git clone https://github.com/JGRyuuTB/Pixel-Gallery.git
+cd Pixel-Gallery
 gradle assembleRelease   # requires JDK 17
 ```
 

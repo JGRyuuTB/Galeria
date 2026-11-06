@@ -18,7 +18,7 @@ import org.json.JSONObject
 /** Repositorio de donde salen las versiones (GitHub Releases). */
 object UpdateConfig {
     const val OWNER = "JGRyuuTB"
-    const val REPO = "Pixel-gallery-You"
+    const val REPO = "Pixel-Gallery"
 }
 
 data class UpdateInfo(
