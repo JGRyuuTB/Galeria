@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 private const val GITHUB_URL = "https://github.com/JGRyuuTB"
@@ -86,7 +87,7 @@ fun AboutScreen(onBack: () -> Unit) {
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(AppIcons.ArrowBack, contentDescription = "Volver")
+                        Icon(AppIcons.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                 },
             )
@@ -101,7 +102,7 @@ fun AboutScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
-                "Acerca de",
+                stringResource(R.string.settings_about),
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
                 color = scheme.onSurface,
@@ -119,13 +120,13 @@ fun AboutScreen(onBack: () -> Unit) {
                         Spacer(Modifier.width(16.dp))
                         Column {
                             Text(
-                                "Galería",
+                                stringResource(R.string.app_name),
                                 style = MaterialTheme.typography.headlineMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = scheme.onSurface,
                             )
                             Text(
-                                "Galería de fotos y videos de código abierto, con el estilo de las apps de Pixel.",
+                                stringResource(R.string.about_tagline),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = scheme.onSurfaceVariant,
                             )
@@ -133,7 +134,7 @@ fun AboutScreen(onBack: () -> Unit) {
                     }
                     Surface(shape = CircleShape, color = scheme.tertiaryContainer) {
                         Text(
-                            "Versión ${appVersion(context)} · Estable",
+                            stringResource(R.string.version_stable, appVersion(context)),
                             style = MaterialTheme.typography.titleMedium,
                             color = scheme.onTertiaryContainer,
                             modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp),
@@ -143,15 +144,15 @@ fun AboutScreen(onBack: () -> Unit) {
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        InfoChip(AppIcons.Globe, "Código abierto")
-                        InfoChip(AppIcons.Sparkle, "Sin anuncios")
-                        InfoChip(AppIcons.Download, "Actualizaciones OTA")
+                        InfoChip(AppIcons.Globe, stringResource(R.string.about_chip_open_source))
+                        InfoChip(AppIcons.Sparkle, stringResource(R.string.about_chip_no_ads))
+                        InfoChip(AppIcons.Download, stringResource(R.string.about_chip_ota))
                         InfoChip(AppIcons.Palette, "Material 3")
                     }
                 }
             }
 
-            SectionHeader("Mantenedor", "La persona detrás de Galería.")
+            SectionHeader(stringResource(R.string.about_maintainer), stringResource(R.string.about_maintainer_sub))
 
             // Tarjeta del mantenedor.
             Surface(
@@ -184,13 +185,13 @@ fun AboutScreen(onBack: () -> Unit) {
                             color = scheme.onSurface,
                         )
                         Text(
-                            "Creador y mantenedor",
+                            stringResource(R.string.about_role),
                             style = MaterialTheme.typography.titleSmall,
                             color = scheme.onSurfaceVariant,
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            "Construyendo Galería junto a la comunidad.",
+                            stringResource(R.string.about_building),
                             style = MaterialTheme.typography.bodyMedium,
                             color = scheme.onSurfaceVariant,
                         )
@@ -203,7 +204,7 @@ fun AboutScreen(onBack: () -> Unit) {
                 }
             }
 
-            SectionHeader("Comunidad", "Novedades, versiones y soporte.")
+            SectionHeader(stringResource(R.string.about_community), stringResource(R.string.about_community_sub))
 
             // Canal de Telegram.
             Surface(
@@ -234,7 +235,7 @@ fun AboutScreen(onBack: () -> Unit) {
                                 color = scheme.onSurface,
                             )
                             Text(
-                                "Canal de Telegram con novedades y nuevas versiones.",
+                                stringResource(R.string.about_channel_desc),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = scheme.onSurfaceVariant,
                             )
@@ -246,7 +247,7 @@ fun AboutScreen(onBack: () -> Unit) {
                     ) {
                         Icon(AppIcons.Send, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Unirse al canal")
+                        Text(stringResource(R.string.about_join_channel))
                     }
                 }
             }
@@ -259,14 +260,12 @@ fun AboutScreen(onBack: () -> Unit) {
             ) {
                 Column(Modifier.padding(18.dp)) {
                     Text(
-                        "Licencia MIT",
+                        stringResource(R.string.about_license),
                         style = MaterialTheme.typography.titleMedium,
                         color = scheme.onSurface,
                     )
                     Text(
-                        "Hecha con Jetpack Compose, Material 3, Media3 y Coil, todos con licencia Apache 2.0. " +
-                            "Paquete com.GalleryYou.Pixel. Usa internet solo para buscar actualizaciones y " +
-                            "mostrar la foto de GitHub y el logo del canal.",
+                        stringResource(R.string.about_credits),
                         style = MaterialTheme.typography.bodyMedium,
                         color = scheme.onSurfaceVariant,
                     )
@@ -393,6 +392,6 @@ private fun openUrl(context: Context, url: String) {
     try {
         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     } catch (e: Exception) {
-        Toast.makeText(context, "No se pudo abrir el enlace", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.link_open_failed), Toast.LENGTH_SHORT).show()
     }
 }

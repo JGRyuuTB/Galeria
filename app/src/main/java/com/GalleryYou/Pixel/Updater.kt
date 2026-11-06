@@ -59,6 +59,9 @@ fun appVersion(context: Context): String = try {
 class Updater(context: Context) {
     private val appContext = context.applicationContext
 
+    /** Contexto con el idioma elegido en Ajustes, para los textos que genera el actualizador. */
+    private val textContext: Context get() = appContext.withAppLocale()
+
     var state: UpdateState by mutableStateOf(UpdateState.Idle)
         private set
 
@@ -87,21 +90,21 @@ class Updater(context: Context) {
     }
 
     /** Explica el fallo con su causa real en vez de culpar siempre a la conexión. */
-    private fun describe(e: Exception): String = when (e) {
-        is UnknownHostException, is ConnectException, is NoRouteToHostException ->
-            "La app no puede salir a internet. Si usas un firewall, VPN o control de red " +
-                "(por ejemplo el del sistema, NetGuard o un bloqueador), permite a Galería usar Wi-Fi y datos."
-        is SocketTimeoutException ->
-            "La conexión tardó demasiado. Revisa tu internet o el firewall e inténtalo de nuevo."
-        is SSLException ->
-            "No se pudo abrir una conexión segura. Revisa la fecha y hora del teléfono o tu VPN."
-        is IllegalStateException ->
-            when {
-                e.message?.contains("403") == true ->
-                    "GitHub limitó las consultas por ahora. Inténtalo de nuevo en un rato."
-                else -> "El servidor respondió con un error (${e.message}). Inténtalo más tarde."
-            }
-        else -> "No se pudo completar (${e.javaClass.simpleName}). Inténtalo de nuevo."
+    private fun describe(e: Exception): String {
+        val t = textContext
+        return when (e) {
+            is UnknownHostException, is ConnectException, is NoRouteToHostException ->
+                t.getString(R.string.update_err_blocked)
+            is SocketTimeoutException -> t.getString(R.string.update_err_timeout)
+            is SSLException -> t.getString(R.string.update_err_ssl)
+            is IllegalStateException ->
+                if (e.message?.contains("403") == true) {
+                    t.getString(R.string.update_err_rate_limit)
+                } else {
+                    t.getString(R.string.update_err_server, e.message ?: "")
+                }
+            else -> t.getString(R.string.update_err_other, e.javaClass.simpleName)
+        }
     }
 
     /** Busca una versión nueva. Con [manual] el resultado (al día o error) también se muestra. */
@@ -203,7 +206,7 @@ class Updater(context: Context) {
             }
         }
         if (file == null) {
-            state = UpdateState.Failed(downloadError ?: "Falló la descarga. Inténtalo de nuevo.")
+            state = UpdateState.Failed(downloadError ?: textContext.getString(R.string.update_err_download))
             return
         }
         state = UpdateState.Ready(info, file)

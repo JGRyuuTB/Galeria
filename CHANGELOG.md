@@ -1,5 +1,11 @@
 # Registro de cambios
 
+## 1.2.0
+
+- Idiomas: la app está disponible en español, inglés, portugués, francés, alemán, italiano, ruso, japonés y chino simplificado.
+- Se puede cambiar el idioma en Ajustes > Idioma (y en la pantalla de bienvenida). Por defecto sigue el idioma del sistema.
+- Las fechas, los plurales y los mensajes de error de las actualizaciones también se adaptan al idioma elegido.
+
 ## 1.1.1
 
 - Álbumes: ya se abren todos (algunos tenían un identificador negativo y la app los ignoraba).

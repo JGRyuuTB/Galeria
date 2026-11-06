@@ -85,6 +85,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.ImageLoader
@@ -153,28 +154,28 @@ fun PermissionScreen(onRequest: () -> Unit, onSettings: () -> Unit) {
             )
         }
         Spacer(Modifier.height(24.dp))
-        Text("Tu galería", style = MaterialTheme.typography.headlineMedium)
+        Text(stringResource(R.string.permission_title), style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(8.dp))
         Text(
-            "Permite el acceso a tus fotos y videos para verlos y reproducirlos aquí.",
+            stringResource(R.string.permission_body),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(24.dp))
-        Button(onClick = onRequest) { Text("Permitir acceso") }
-        TextButton(onClick = onSettings) { Text("Abrir ajustes") }
+        Button(onClick = onRequest) { Text(stringResource(R.string.permission_allow)) }
+        TextButton(onClick = onSettings) { Text(stringResource(R.string.action_open_settings)) }
     }
 }
 
 @Composable
-fun EmptyState(padding: PaddingValues, text: String = "No hay fotos ni videos") {
+fun EmptyState(padding: PaddingValues, text: String? = null) {
     Box(
         modifier = Modifier.fillMaxSize().padding(padding),
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text,
+            text ?: stringResource(R.string.empty_media),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -185,7 +186,11 @@ fun EmptyState(padding: PaddingValues, text: String = "No hay fotos ni videos") 
 
 @Composable
 fun FilterRow(selected: Int, onSelect: (Int) -> Unit) {
-    val labels = listOf("Todo", "Fotos", "Videos")
+    val labels = listOf(
+        stringResource(R.string.filter_all),
+        stringResource(R.string.filter_photos),
+        stringResource(R.string.filter_videos),
+    )
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -218,15 +223,15 @@ fun SelectionTopBar(
     val blurOn = backdrop != null && backdrop.enabled
     Box(Modifier.backdropBlur(backdrop, MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f))) {
     TopAppBar(
-        title = { Text(if (count == 1) "1 seleccionado" else "$count seleccionados") },
+        title = { Text(quantityString(R.plurals.selected_count, count)) },
         navigationIcon = {
             IconButton(onClick = onClose) {
-                Icon(AppIcons.Close, contentDescription = "Cancelar selección")
+                Icon(AppIcons.Close, contentDescription = stringResource(R.string.cd_cancel_selection))
             }
         },
         actions = {
             IconButton(onClick = onSelectAll) {
-                Icon(AppIcons.SelectAll, contentDescription = "Seleccionar todo")
+                Icon(AppIcons.SelectAll, contentDescription = stringResource(R.string.cd_select_all))
             }
             actions()
         },
@@ -295,6 +300,8 @@ fun MediaGrid(
     val loader = LocalGalleryLoader.current
     val thumbPx = thumbSizeFor(settings.photoColumns)
     val gridState = rememberLazyGridState()
+    val todayText = stringResource(R.string.day_today)
+    val yesterdayText = stringResource(R.string.day_yesterday)
     val prefetched = remember(items, thumbPx) { HashSet<Int>() }
 
     // Precarga las miniaturas que están por aparecer para que no se vean huecos al desplazarse rápido.
@@ -333,7 +340,7 @@ fun MediaGrid(
             val first = group.first()
             item(span = { GridItemSpan(maxLineSpan) }, key = "day-${first.index}", contentType = "day") {
                 Text(
-                    dayLabel(first.value.dateMillis),
+                    dayLabel(first.value.dateMillis, todayText, yesterdayText),
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
                 )
@@ -456,7 +463,7 @@ fun Thumb(
                 modifier = Modifier.align(Alignment.BottomStart).padding(6.dp),
             ) {
                 Text(
-                    "$days d",
+                    stringResource(R.string.days_short, days),
                     color = Color.White,
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
@@ -582,7 +589,7 @@ fun AlbumCard(
             modifier = Modifier.padding(top = 8.dp, start = 4.dp),
         )
         Text(
-            if (columns >= 4) "${album.count}" else "${album.count} elementos",
+            if (columns >= 4) "${album.count}" else quantityString(R.plurals.album_items, album.count),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(start = 4.dp),
@@ -606,14 +613,14 @@ fun MoveSheet(
     }
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Text(
-            "Mover a álbum",
+            stringResource(R.string.move_to_album),
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
         )
         LazyColumn(modifier = Modifier.navigationBarsPadding()) {
             item {
                 ListItem(
-                    headlineContent = { Text("Álbum nuevo") },
+                    headlineContent = { Text(stringResource(R.string.new_album)) },
                     leadingContent = {
                         Box(
                             modifier = Modifier
@@ -636,7 +643,7 @@ fun MoveSheet(
             items(targets, key = { it.id }) { album ->
                 ListItem(
                     headlineContent = { Text(album.name, maxLines = 1) },
-                    supportingContent = { Text("${album.count} elementos") },
+                    supportingContent = { Text(quantityString(R.plurals.album_items, album.count)) },
                     leadingContent = {
                         AsyncImage(
                             model = thumbRequest(album.cover.uri, 160),
@@ -669,18 +676,18 @@ private fun NewAlbumDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
     val clean = name.trim().replace(Regex("[\\\\/:*?\"<>|]"), "")
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Álbum nuevo") },
+        title = { Text(stringResource(R.string.new_album)) },
         text = {
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
                 singleLine = true,
-                label = { Text("Nombre") },
+                label = { Text(stringResource(R.string.field_name)) },
             )
         },
         confirmButton = {
-            TextButton(enabled = clean.isNotEmpty(), onClick = { onConfirm(clean) }) { Text("Mover") }
+            TextButton(enabled = clean.isNotEmpty(), onClick = { onConfirm(clean) }) { Text(stringResource(R.string.action_move)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }

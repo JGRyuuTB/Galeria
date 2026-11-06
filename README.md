@@ -38,6 +38,7 @@
 - **Material You app icon** that picks up your wallpaper colors (or the default icon).
 - **Predictive back** gesture support.
 - **In-app (OTA) updates** from GitHub Releases.
+- **Languages**: Spanish, English, Portuguese, French, German, Italian, Russian, Japanese and Simplified Chinese, switchable in Settings > Language.
 
 ### 📷 Photos & Albums
 

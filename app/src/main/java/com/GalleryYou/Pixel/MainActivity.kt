@@ -72,6 +72,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -91,6 +92,11 @@ private val LightScrim = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
 private val DarkScrim = android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)
 
 class MainActivity : ComponentActivity() {
+    /** Aplica el idioma elegido en Ajustes (si no, se usa el del sistema). */
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(newBase.withAppLocale())
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -265,12 +271,12 @@ fun GalleryRoot(settings: AppSettings, updater: Updater) {
     fun trashItems(items: List<MediaFile>, onDone: () -> Unit = {}) {
         if (items.isEmpty()) return
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            toast("La papelera requiere Android 11 o superior")
+            toast(context.getString(R.string.trash_needs_android11))
             return
         }
         val uris = items.map { it.uri }
         launchRequest(MediaStore.createTrashRequest(context.contentResolver, uris, true).intentSender) {
-            toast(if (items.size == 1) "Movido a la papelera" else "${items.size} elementos en la papelera")
+            toast(context.resources.getQuantityString(R.plurals.toast_trashed, items.size, items.size))
             selected = emptySet()
             onDone()
             reload++
@@ -281,7 +287,7 @@ fun GalleryRoot(settings: AppSettings, updater: Updater) {
         if (items.isEmpty() || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
         val uris = items.map { it.uri }
         launchRequest(MediaStore.createTrashRequest(context.contentResolver, uris, false).intentSender) {
-            toast("Restaurado")
+            toast(context.getString(R.string.toast_restored))
             reload++
         }
     }
@@ -290,7 +296,7 @@ fun GalleryRoot(settings: AppSettings, updater: Updater) {
         if (items.isEmpty() || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
         val uris = items.map { it.uri }
         launchRequest(MediaStore.createDeleteRequest(context.contentResolver, uris).intentSender) {
-            toast("Eliminado definitivamente")
+            toast(context.getString(R.string.toast_deleted_forever))
             reload++
         }
     }
@@ -298,7 +304,7 @@ fun GalleryRoot(settings: AppSettings, updater: Updater) {
     fun moveItemsTo(items: List<MediaFile>, relativePath: String) {
         if (items.isEmpty()) return
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            toast("Mover entre álbumes requiere Android 11 o superior")
+            toast(context.getString(R.string.move_needs_android11))
             return
         }
         val uris = items.map { it.uri }
@@ -307,9 +313,9 @@ fun GalleryRoot(settings: AppSettings, updater: Updater) {
                 val moved = withContext(Dispatchers.IO) { MediaRepo.move(context, items, relativePath) }
                 toast(
                     if (moved == items.size) {
-                        "Movido"
+                        context.getString(R.string.toast_moved)
                     } else {
-                        "$moved de ${items.size} movidos (esa carpeta no admite algunos archivos)"
+                        context.getString(R.string.toast_moved_partial, moved, items.size)
                     },
                 )
                 selected = emptySet()
@@ -371,7 +377,8 @@ fun GalleryRoot(settings: AppSettings, updater: Updater) {
             else -> all
         }
     }
-    val albums = remember(all) { MediaRepo.albums(all) }
+    val unnamedAlbum = stringResource(R.string.album_unnamed)
+    val albums = remember(all, unnamedAlbum) { MediaRepo.albums(all, unnamedAlbum) }
     val openAlbum = albums.firstOrNull { it.id == openAlbumId }
     val selectedItems = remember(all, selected) { all.filter { it.uri in selected } }
 
@@ -458,10 +465,10 @@ fun GalleryRoot(settings: AppSettings, updater: Updater) {
                                     onSelectAll = { selected = filtered.map { it.uri }.toSet() },
                                 ) {
                                     IconButton(onClick = { moveItems = selectedItems }) {
-                                        Icon(AppIcons.Folder, contentDescription = "Mover a álbum")
+                                        Icon(AppIcons.Folder, contentDescription = stringResource(R.string.move_to_album))
                                     }
                                     IconButton(onClick = { trashItems(selectedItems) }) {
-                                        Icon(AppIcons.Trash, contentDescription = "Mover a la papelera")
+                                        Icon(AppIcons.Trash, contentDescription = stringResource(R.string.move_to_trash))
                                     }
                                 }
                             } else {
@@ -472,7 +479,7 @@ fun GalleryRoot(settings: AppSettings, updater: Updater) {
                                     ),
                                 ) {
                                     TopAppBar(
-                                        title = { Text(if (tab == 0) "Fotos" else "Álbumes") },
+                                        title = { Text(stringResource(if (tab == 0) R.string.nav_photos else R.string.nav_albums)) },
                                         colors = TopAppBarDefaults.topAppBarColors(
                                             containerColor = if (backdrop.enabled) {
                                                 androidx.compose.ui.graphics.Color.Transparent
@@ -658,10 +665,10 @@ fun AlbumDetail(
                     onSelectAll = onSelectAll,
                 ) {
                     IconButton(onClick = onMove) {
-                        Icon(AppIcons.Folder, contentDescription = "Mover a álbum")
+                        Icon(AppIcons.Folder, contentDescription = stringResource(R.string.move_to_album))
                     }
                     IconButton(onClick = onTrash) {
-                        Icon(AppIcons.Trash, contentDescription = "Mover a la papelera")
+                        Icon(AppIcons.Trash, contentDescription = stringResource(R.string.move_to_trash))
                     }
                 }
             } else {
@@ -669,7 +676,7 @@ fun AlbumDetail(
                     title = { Text(album.name) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(AppIcons.ArrowBack, contentDescription = "Volver")
+                            Icon(AppIcons.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(

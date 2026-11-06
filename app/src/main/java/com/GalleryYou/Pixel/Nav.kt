@@ -1,5 +1,6 @@
 package com.GalleryYou.Pixel
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.AnimationSpec
@@ -39,15 +40,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
-data class NavDest(val label: String, val icon: ImageVector, val iconSelected: ImageVector)
+data class NavDest(@StringRes val labelRes: Int, val icon: ImageVector, val iconSelected: ImageVector)
 
 val GalleryNavItems = listOf(
-    NavDest("Fotos", AppIcons.Image, AppIcons.ImageDuo),
-    NavDest("Álbumes", AppIcons.Collections, AppIcons.CollectionsDuo),
-    NavDest("Papelera", AppIcons.Trash, AppIcons.TrashDuo),
-    NavDest("Ajustes", AppIcons.Settings, AppIcons.SettingsDuo),
+    NavDest(R.string.nav_photos, AppIcons.Image, AppIcons.ImageDuo),
+    NavDest(R.string.nav_albums, AppIcons.Collections, AppIcons.CollectionsDuo),
+    NavDest(R.string.nav_trash, AppIcons.Trash, AppIcons.TrashDuo),
+    NavDest(R.string.nav_settings, AppIcons.Settings, AppIcons.SettingsDuo),
 )
 
 /**
@@ -121,7 +123,7 @@ private fun NavItem(dest: NavDest, selected: Boolean, animations: Boolean, onCli
     ) {
         Icon(
             imageVector = if (selected) dest.iconSelected else dest.icon,
-            contentDescription = dest.label,
+            contentDescription = stringResource(dest.labelRes),
             tint = fg,
             modifier = Modifier.size(24.dp),
         )
@@ -135,7 +137,7 @@ private fun NavItem(dest: NavDest, selected: Boolean, animations: Boolean, onCli
             ),
         ) {
             Text(
-                dest.label,
+                stringResource(dest.labelRes),
                 color = fg,
                 style = MaterialTheme.typography.labelLarge,
                 maxLines = 1,

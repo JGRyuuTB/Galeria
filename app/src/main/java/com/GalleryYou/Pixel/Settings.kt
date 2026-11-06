@@ -41,6 +41,15 @@ class AppSettings(context: Context) {
     var materialYouIcon by mutableStateOf(prefs.getBoolean("materialYouIcon", false))
         private set
 
+    /** Idioma elegido ("" = seguir el del sistema). Al cambiarlo hay que recrear la actividad. */
+    var language by mutableStateOf(prefs.getString("language", "") ?: "")
+        private set
+
+    fun updateLanguage(tag: String) {
+        language = tag
+        prefs.edit().putString("language", tag).apply()
+    }
+
     var blur by mutableIntStateOf(prefs.getInt("blur", 0))
         private set
 

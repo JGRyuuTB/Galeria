@@ -58,12 +58,12 @@ object MediaRepo {
         return result
     }
 
-    fun albums(all: List<MediaFile>): List<Album> =
+    fun albums(all: List<MediaFile>, unnamed: String): List<Album> =
         all.groupBy { it.bucketId }
             .map { (id, list) ->
                 Album(
                     id = id,
-                    name = list.first().bucket.ifBlank { "Sin nombre" },
+                    name = list.first().bucket.ifBlank { unnamed },
                     cover = list.first(),
                     count = list.size,
                     items = list,
@@ -206,21 +206,27 @@ fun dayKey(millis: Long): Int {
     return c.get(Calendar.YEAR) * 1000 + c.get(Calendar.DAY_OF_YEAR)
 }
 
-fun dayLabel(millis: Long): String {
+fun dayLabel(millis: Long, todayLabel: String, yesterdayLabel: String): String {
     val now = System.currentTimeMillis()
     val today = dayKey(now)
     val yesterday = dayKey(now - 86_400_000L)
     val key = dayKey(millis)
     return when (key) {
-        today -> "Hoy"
-        yesterday -> "Ayer"
+        today -> todayLabel
+        yesterday -> yesterdayLabel
         else -> {
-            val pattern = if (key / 1000 == today / 1000) "EEE, d MMM" else "EEE, d MMM yyyy"
-            SimpleDateFormat(pattern, Locale.getDefault()).format(Date(millis))
-                .replaceFirstChar { it.uppercase() }
+            val skeleton = if (key / 1000 == today / 1000) "EEEdMMM" else "EEEdMMMyyyy"
+            formatDateSkeleton(millis, skeleton).replaceFirstChar { it.uppercase() }
         }
     }
 }
 
 fun formatDate(millis: Long, pattern: String): String =
     SimpleDateFormat(pattern, Locale.getDefault()).format(Date(millis))
+
+/** Fecha con el orden y los separadores propios del idioma actual (por ejemplo "EEEdMMMyyyy"). */
+fun formatDateSkeleton(millis: Long, skeleton: String): String {
+    val locale = Locale.getDefault()
+    val pattern = android.text.format.DateFormat.getBestDateTimePattern(locale, skeleton)
+    return SimpleDateFormat(pattern, locale).format(Date(millis))
+}

@@ -73,6 +73,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
@@ -110,7 +111,7 @@ fun Onboarding(
                 label = "onboarding",
             ) { s ->
                 when (s) {
-                    0 -> WelcomeStep(animate)
+                    0 -> WelcomeStep(animate, settings)
                     1 -> PermissionStep(granted, animate, onRequestPermission, onOpenAppSettings)
                     2 -> ThemeStep(settings)
                     3 -> ColorsStep(settings)
@@ -155,9 +156,9 @@ private fun BottomBar(step: Int, canNext: Boolean, onNext: () -> Unit) {
         ) {
             Text(
                 text = when {
-                    step == 0 -> "¡Vamos!"
-                    last -> "Todo listo"
-                    else -> "Paso $step de ${STEPS - 1}"
+                    step == 0 -> stringResource(R.string.onboard_lets_go)
+                    last -> stringResource(R.string.onboard_all_ready)
+                    else -> stringResource(R.string.onboard_step, step, STEPS - 1)
                 },
                 style = if (step == 0) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.titleLarge,
                 fontWeight = if (step == 0) FontWeight.Bold else FontWeight.Medium,
@@ -174,7 +175,7 @@ private fun BottomBar(step: Int, canNext: Boolean, onNext: () -> Unit) {
             ) {
                 Icon(
                     imageVector = if (last) AppIcons.Check else AppIcons.ArrowForward,
-                    contentDescription = if (last) "Empezar" else "Siguiente",
+                    contentDescription = stringResource(if (last) R.string.onboard_start else R.string.onboard_next),
                     tint = if (canNext) scheme.onPrimary else scheme.onSurfaceVariant,
                     modifier = Modifier.size(28.dp),
                 )
@@ -186,8 +187,12 @@ private fun BottomBar(step: Int, canNext: Boolean, onNext: () -> Unit) {
 // ------------------------------------------------------------------ Pasos
 
 @Composable
-private fun WelcomeStep(animate: Boolean) {
+private fun WelcomeStep(animate: Boolean, settings: AppSettings) {
     val scheme = MaterialTheme.colorScheme
+    val context = LocalContext.current
+    var showLanguage by rememberSaveable { mutableStateOf(false) }
+    val languageName = AppLanguages.firstOrNull { it.tag == settings.language }?.nativeName
+        ?: stringResource(R.string.language_system)
     Column(
         Modifier
             .fillMaxSize()
@@ -195,13 +200,13 @@ private fun WelcomeStep(animate: Boolean) {
             .padding(horizontal = 28.dp, vertical = 24.dp),
     ) {
         Text(
-            "Bienvenido a",
+            stringResource(R.string.onboard_welcome),
             style = MaterialTheme.typography.displayMedium,
             fontWeight = FontWeight.ExtraBold,
             color = scheme.onSurface,
         )
         Text(
-            "Galería",
+            stringResource(R.string.app_name),
             style = MaterialTheme.typography.displayMedium,
             fontWeight = FontWeight.Bold,
             color = scheme.primary,
@@ -210,7 +215,7 @@ private fun WelcomeStep(animate: Boolean) {
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             Surface(shape = CircleShape, color = scheme.surfaceContainerHigh) {
                 Text(
-                    "Versión ${appVersion(LocalContext.current)} · Estable",
+                    stringResource(R.string.version_stable, appVersion(LocalContext.current)),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(horizontal = 22.dp, vertical = 10.dp),
@@ -221,13 +226,32 @@ private fun WelcomeStep(animate: Boolean) {
         HeroIllustration(animate, Modifier.fillMaxWidth().height(260.dp))
         Spacer(Modifier.weight(1f))
         Text(
-            "Vamos a dejar todo listo para ti.",
+            stringResource(R.string.onboard_welcome_sub),
             style = MaterialTheme.typography.titleMedium,
             textAlign = TextAlign.Center,
             color = scheme.onSurface,
             modifier = Modifier.fillMaxWidth(),
         )
-        Spacer(Modifier.height(16.dp))
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            TextButton(onClick = { showLanguage = true }) {
+                Icon(AppIcons.Globe, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(languageName)
+            }
+        }
+    }
+    if (showLanguage) {
+        LanguageDialog(
+            current = settings.language,
+            onSelect = { tag ->
+                showLanguage = false
+                if (tag != settings.language) {
+                    settings.updateLanguage(tag)
+                    context.findActivity()?.recreate()
+                }
+            },
+            onDismiss = { showLanguage = false },
+        )
     }
 }
 
@@ -240,8 +264,8 @@ private fun PermissionStep(
 ) {
     val scheme = MaterialTheme.colorScheme
     StepFrame(
-        title = "Permiso de medios",
-        subtitle = "Galería necesita acceso a tus fotos y videos para mostrar tu colección.",
+        title = stringResource(R.string.onboard_perm_title),
+        subtitle = stringResource(R.string.onboard_perm_sub),
     ) {
         Spacer(Modifier.height(24.dp))
         ClusterIllustration(
@@ -262,7 +286,7 @@ private fun PermissionStep(
                     Icon(AppIcons.CheckCircle, null, tint = scheme.onPrimaryContainer)
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        "Permiso concedido",
+                        stringResource(R.string.onboard_perm_granted),
                         style = MaterialTheme.typography.titleMedium,
                         color = scheme.onPrimaryContainer,
                     )
@@ -278,39 +302,39 @@ private fun PermissionStep(
                 ),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 32.dp, vertical = 18.dp),
             ) {
-                Text("Conceder permiso de medios", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.onboard_perm_grant), style = MaterialTheme.typography.titleMedium)
             }
-            TextButton(onClick = onOpenSettings) { Text("Abrir ajustes de la app") }
+            TextButton(onClick = onOpenSettings) { Text(stringResource(R.string.onboard_open_app_settings)) }
         }
     }
 }
 
 @Composable
 private fun ThemeStep(settings: AppSettings) {
-    StepFrame(title = "Tema de la app", subtitle = "Elige el aspecto antes de explorar tu galería.") {
+    StepFrame(title = stringResource(R.string.onboard_theme_title), subtitle = stringResource(R.string.onboard_theme_sub)) {
         Spacer(Modifier.height(32.dp))
         OptionCard(
-            title = "Oscuro",
-            desc = "El aspecto oscuro Material 3, cómodo para los ojos.",
+            title = stringResource(R.string.theme_dark),
+            desc = stringResource(R.string.onboard_theme_dark_desc),
             icon = AppIcons.Moon,
             selected = settings.themeMode == 2,
-            badge = "Recomendado",
+            badge = stringResource(R.string.badge_recommended),
         ) { settings.updateThemeMode(2) }
         Spacer(Modifier.height(12.dp))
         OptionCard(
-            title = "Claro",
-            desc = "Un aspecto Material 3 más luminoso en toda la app.",
+            title = stringResource(R.string.theme_light),
+            desc = stringResource(R.string.onboard_theme_light_desc),
             icon = AppIcons.Sun,
             selected = settings.themeMode == 1,
         ) { settings.updateThemeMode(1) }
         Spacer(Modifier.height(12.dp))
         OptionCard(
-            title = "Seguir el sistema",
-            desc = "Coincidir con el tema del teléfono.",
+            title = stringResource(R.string.onboard_theme_system),
+            desc = stringResource(R.string.onboard_theme_system_desc),
             icon = AppIcons.Phone,
             selected = settings.themeMode == 0,
         ) { settings.updateThemeMode(0) }
-        FootNote("Puedes cambiarlo después en Ajustes > Apariencia.")
+        FootNote(stringResource(R.string.onboard_foot_appearance))
     }
 }
 
@@ -318,14 +342,14 @@ private fun ThemeStep(settings: AppSettings) {
 private fun ColorsStep(settings: AppSettings) {
     val context = LocalContext.current
     val dynamicAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    StepFrame(title = "Colores", subtitle = "Haz que la galería combine contigo.") {
+    StepFrame(title = stringResource(R.string.onboard_colors_title), subtitle = stringResource(R.string.onboard_colors_sub)) {
         Spacer(Modifier.height(32.dp))
         ToggleCard(
-            title = "Colores dinámicos",
+            title = stringResource(R.string.settings_dynamic_colors),
             desc = if (dynamicAvailable) {
-                "Usa los colores de tu fondo de pantalla (Material You)."
+                stringResource(R.string.onboard_dynamic_on)
             } else {
-                "Disponible desde Android 12."
+                stringResource(R.string.onboard_dynamic_off)
             },
             icon = AppIcons.Palette,
             checked = settings.dynamicColor && dynamicAvailable,
@@ -333,8 +357,8 @@ private fun ColorsStep(settings: AppSettings) {
         ) { settings.updateDynamicColor(it) }
         Spacer(Modifier.height(12.dp))
         ToggleCard(
-            title = "Icono Material You",
-            desc = "El icono de la app toma los colores de tu fondo.",
+            title = stringResource(R.string.onboard_icon_title),
+            desc = stringResource(R.string.onboard_icon_desc),
             icon = AppIcons.Apps,
             checked = settings.materialYouIcon,
         ) {
@@ -344,13 +368,13 @@ private fun ColorsStep(settings: AppSettings) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Spacer(Modifier.height(12.dp))
             ToggleCard(
-                title = "Desenfoque",
-                desc = "Efecto de cristal en las barras. Puede usar más batería.",
+                title = stringResource(R.string.onboard_blur_title),
+                desc = stringResource(R.string.onboard_blur_desc),
                 icon = AppIcons.Blur,
                 checked = settings.blur > 0,
             ) { settings.updateBlur(if (it) 1 else 0) }
         }
-        FootNote("Puedes cambiarlo después en Ajustes > Apariencia.")
+        FootNote(stringResource(R.string.onboard_foot_appearance))
     }
 }
 
@@ -359,7 +383,7 @@ private fun LayoutStep(settings: AppSettings) {
     val scheme = MaterialTheme.colorScheme
     val cols = settings.photoColumns
     val corner = if (settings.roundedCorners) 12.dp else 3.dp
-    StepFrame(title = "Disposición de la galería", subtitle = "Elige cómo quieres ver tus fotos.") {
+    StepFrame(title = stringResource(R.string.onboard_layout_title), subtitle = stringResource(R.string.onboard_layout_sub)) {
         Spacer(Modifier.height(24.dp))
         // Vista previa en vivo.
         Box(
@@ -373,7 +397,7 @@ private fun LayoutStep(settings: AppSettings) {
         ) {
             Column {
                 Text(
-                    "Galería",
+                    stringResource(R.string.app_name),
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
                     color = scheme.onPrimaryContainer,
@@ -431,66 +455,66 @@ private fun LayoutStep(settings: AppSettings) {
         }
         Spacer(Modifier.height(4.dp))
         Text(
-            "Columnas",
+            stringResource(R.string.onboard_columns),
             style = MaterialTheme.typography.labelLarge,
             color = scheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 6.dp),
         )
         Spacer(Modifier.height(14.dp))
         ToggleCard(
-            title = "Esquinas redondeadas",
-            desc = "Miniaturas con bordes suaves.",
+            title = stringResource(R.string.settings_rounded),
+            desc = stringResource(R.string.onboard_rounded_desc),
             icon = AppIcons.Corner,
             checked = settings.roundedCorners,
         ) { settings.updateRoundedCorners(it) }
-        FootNote("Puedes cambiarlo después en Ajustes > Apariencia.")
+        FootNote(stringResource(R.string.onboard_foot_appearance))
     }
 }
 
 @Composable
 private fun PlayerStep(settings: AppSettings) {
-    StepFrame(title = "Reproductor", subtitle = "Elige cómo se ven y se reproducen tus videos.") {
+    StepFrame(title = stringResource(R.string.settings_player), subtitle = stringResource(R.string.onboard_player_sub)) {
         Spacer(Modifier.height(24.dp))
         ToggleCard(
-            title = "Reproducción automática",
-            desc = "Los videos empiezan al abrirlos.",
+            title = stringResource(R.string.onboard_autoplay_title),
+            desc = stringResource(R.string.onboard_autoplay_desc),
             icon = AppIcons.PlayCircle,
             checked = settings.autoplay,
         ) { settings.updateAutoplay(it) }
         Spacer(Modifier.height(12.dp))
         ToggleCard(
-            title = "Animaciones",
-            desc = "Transiciones y efectos en toda la app.",
+            title = stringResource(R.string.settings_animations),
+            desc = stringResource(R.string.onboard_animations_desc),
             icon = AppIcons.Sparkle,
             checked = settings.animations,
         ) { settings.updateAnimations(it) }
         Spacer(Modifier.height(20.dp))
         Text(
-            "Borde del panel de controles",
+            stringResource(R.string.onboard_border_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.fillMaxWidth().padding(start = 8.dp, bottom = 10.dp),
         )
-        OptionCard("Sin borde", "Un panel limpio y simple.", AppIcons.Dashed, settings.playerBorder == 0) {
+        OptionCard(stringResource(R.string.onboard_border_none), stringResource(R.string.onboard_border_none_desc), AppIcons.Dashed, settings.playerBorder == 0) {
             settings.updatePlayerBorder(0)
         }
         Spacer(Modifier.height(10.dp))
-        OptionCard("Color del tema", "Borde fijo con el color principal.", AppIcons.Dashed, settings.playerBorder == 1) {
+        OptionCard(stringResource(R.string.onboard_border_theme), stringResource(R.string.onboard_border_theme_desc), AppIcons.Dashed, settings.playerBorder == 1) {
             settings.updatePlayerBorder(1)
         }
         Spacer(Modifier.height(10.dp))
-        OptionCard("Animado", "El borde cambia de color al reproducir.", AppIcons.Dashed, settings.playerBorder == 2, badge = "Recomendado") {
+        OptionCard(stringResource(R.string.border_animated), stringResource(R.string.onboard_border_animated_desc), AppIcons.Dashed, settings.playerBorder == 2, badge = stringResource(R.string.badge_recommended)) {
             settings.updatePlayerBorder(2)
         }
-        FootNote("Puedes cambiarlo después en Ajustes > Reproductor.")
+        FootNote(stringResource(R.string.onboard_foot_player))
     }
 }
 
 @Composable
 private fun DoneStep(animate: Boolean) {
     StepFrame(
-        title = "¡Todo listo!",
-        subtitle = "Tu galería está preparada. Puedes ajustar todo después en Ajustes.",
+        title = stringResource(R.string.onboard_done_title),
+        subtitle = stringResource(R.string.onboard_done_sub),
     ) {
         Spacer(Modifier.height(24.dp))
         ClusterIllustration(

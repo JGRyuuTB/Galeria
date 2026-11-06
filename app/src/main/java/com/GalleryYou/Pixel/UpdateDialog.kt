@@ -15,6 +15,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -29,13 +30,13 @@ fun UpdateDialog(updater: Updater) {
     when (val st = updater.state) {
         is UpdateState.Available -> AlertDialog(
             onDismissRequest = { updater.dismiss() },
-            title = { Text("Actualización disponible") },
+            title = { Text(stringResource(R.string.update_available_title)) },
             text = {
                 Column {
-                    Text("Versión ${st.info.version} (tienes la ${updater.currentVersion}).")
+                    Text(stringResource(R.string.update_available_body, st.info.version, updater.currentVersion))
                     if (st.info.sizeBytes > 0) {
                         Text(
-                            "Tamaño: %.1f MB".format(st.info.sizeBytes / 1_048_576.0),
+                            stringResource(R.string.update_size_mb, st.info.sizeBytes / 1_048_576.0),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -55,15 +56,15 @@ fun UpdateDialog(updater: Updater) {
             },
             confirmButton = {
                 TextButton(onClick = { scope.launch { updater.downloadAndInstall() } }) {
-                    Text("Descargar e instalar")
+                    Text(stringResource(R.string.update_download_install))
                 }
             },
-            dismissButton = { TextButton(onClick = { updater.dismiss() }) { Text("Ahora no") } },
+            dismissButton = { TextButton(onClick = { updater.dismiss() }) { Text(stringResource(R.string.update_not_now)) } },
         )
 
         is UpdateState.Downloading -> AlertDialog(
             onDismissRequest = {},
-            title = { Text("Descargando ${st.info.version}") },
+            title = { Text(stringResource(R.string.update_downloading_title, st.info.version)) },
             text = {
                 Column {
                     LinearProgressIndicator(
@@ -79,21 +80,21 @@ fun UpdateDialog(updater: Updater) {
 
         is UpdateState.Ready -> AlertDialog(
             onDismissRequest = { updater.dismiss() },
-            title = { Text("Lista para instalar") },
+            title = { Text(stringResource(R.string.update_status_ready)) },
             text = {
                 Text(
-                    "Si Android te pide permiso para instalar desde esta app, actívalo, vuelve y pulsa Instalar.",
+                    stringResource(R.string.update_ready_body),
                 )
             },
-            confirmButton = { TextButton(onClick = { updater.install() }) { Text("Instalar") } },
-            dismissButton = { TextButton(onClick = { updater.dismiss() }) { Text("Cerrar") } },
+            confirmButton = { TextButton(onClick = { updater.install() }) { Text(stringResource(R.string.update_install)) } },
+            dismissButton = { TextButton(onClick = { updater.dismiss() }) { Text(stringResource(R.string.action_close)) } },
         )
 
         is UpdateState.Failed -> AlertDialog(
             onDismissRequest = { updater.dismiss() },
-            title = { Text("No se pudo actualizar") },
+            title = { Text(stringResource(R.string.update_failed_title)) },
             text = { Text(st.message) },
-            confirmButton = { TextButton(onClick = { updater.dismiss() }) { Text("Cerrar") } },
+            confirmButton = { TextButton(onClick = { updater.dismiss() }) { Text(stringResource(R.string.action_close)) } },
             dismissButton = {
                 TextButton(onClick = {
                     updater.dismiss()
@@ -103,20 +104,20 @@ fun UpdateDialog(updater: Updater) {
                             android.net.Uri.fromParts("package", context.packageName, null),
                         ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
                     )
-                }) { Text("Ajustes de la app") }
+                }) { Text(stringResource(R.string.onboard_open_app_settings)) }
             },
         )
 
         UpdateState.UpToDate -> AlertDialog(
             onDismissRequest = { updater.dismiss() },
-            title = { Text("Estás al día") },
-            text = { Text("Tienes la última versión (${updater.currentVersion}).") },
-            confirmButton = { TextButton(onClick = { updater.dismiss() }) { Text("Aceptar") } },
+            title = { Text(stringResource(R.string.update_uptodate_title)) },
+            text = { Text(stringResource(R.string.update_uptodate_body, updater.currentVersion)) },
+            confirmButton = { TextButton(onClick = { updater.dismiss() }) { Text(stringResource(R.string.action_ok)) } },
         )
 
         UpdateState.Checking -> AlertDialog(
             onDismissRequest = { updater.dismiss() },
-            title = { Text("Buscando actualizaciones") },
+            title = { Text(stringResource(R.string.update_checking_title)) },
             text = { LinearProgressIndicator(modifier = Modifier.fillMaxWidth()) },
             confirmButton = {},
         )

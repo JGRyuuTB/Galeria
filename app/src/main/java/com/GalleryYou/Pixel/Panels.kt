@@ -54,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 // ------------------------------------------------------------------ Ajustes
@@ -67,15 +68,18 @@ fun SettingsScreen(settings: AppSettings, updater: Updater, onBack: () -> Unit) 
     val gapValues = listOf(0, 2, 6)
     var showAbout by rememberSaveable { mutableStateOf(false) }
     BackHandler(enabled = showAbout) { showAbout = false }
+    var showLanguage by rememberSaveable { mutableStateOf(false) }
     val updateStatus = when (val st = updater.state) {
-        is UpdateState.Checking -> "Buscando…"
-        is UpdateState.Available -> "Disponible: versión ${st.info.version}"
-        is UpdateState.UpToDate -> "Estás al día (${updater.currentVersion})"
-        is UpdateState.Downloading -> "Descargando…"
-        is UpdateState.Ready -> "Lista para instalar"
+        is UpdateState.Checking -> stringResource(R.string.update_status_checking)
+        is UpdateState.Available -> stringResource(R.string.update_status_available, st.info.version)
+        is UpdateState.UpToDate -> stringResource(R.string.update_status_up_to_date, updater.currentVersion)
+        is UpdateState.Downloading -> stringResource(R.string.update_status_downloading)
+        is UpdateState.Ready -> stringResource(R.string.update_status_ready)
         is UpdateState.Failed -> st.message
-        is UpdateState.Idle -> "Versión ${updater.currentVersion}"
+        is UpdateState.Idle -> stringResource(R.string.version_label, updater.currentVersion)
     }
+    val languageName = AppLanguages.firstOrNull { it.tag == settings.language }?.nativeName
+        ?: stringResource(R.string.language_system)
 
     AnimatedContent(
         targetState = showAbout,
@@ -99,10 +103,10 @@ fun SettingsScreen(settings: AppSettings, updater: Updater, onBack: () -> Unit) 
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                title = { Text("Ajustes") },
+                title = { Text(stringResource(R.string.nav_settings)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(AppIcons.ArrowBack, contentDescription = "Volver")
+                        Icon(AppIcons.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                 },
             )
@@ -116,19 +120,33 @@ fun SettingsScreen(settings: AppSettings, updater: Updater, onBack: () -> Unit) 
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            SettingsGroup("Apariencia") {
+            SettingsGroup(stringResource(R.string.settings_language)) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_language)) },
+                    supportingContent = { Text(languageName) },
+                    leadingContent = { Icon(AppIcons.Globe, contentDescription = null) },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    modifier = Modifier.clickable { showLanguage = true },
+                )
+            }
+
+            SettingsGroup(stringResource(R.string.settings_appearance)) {
                 ChoiceRow(
-                    title = "Tema",
-                    options = listOf("Sistema", "Claro", "Oscuro"),
+                    title = stringResource(R.string.settings_theme),
+                    options = listOf(
+                        stringResource(R.string.theme_system),
+                        stringResource(R.string.theme_light),
+                        stringResource(R.string.theme_dark),
+                    ),
                     selected = settings.themeMode,
                     onSelect = { settings.updateThemeMode(it) },
                 )
                 SwitchRow(
-                    title = "Colores dinámicos",
+                    title = stringResource(R.string.settings_dynamic_colors),
                     subtitle = if (canDynamic) {
-                        "Usa los colores de tu fondo de pantalla (Material You)"
+                        stringResource(R.string.settings_dynamic_colors_on)
                     } else {
-                        "Requiere Android 12 o superior"
+                        stringResource(R.string.requires_android12)
                     },
                     checked = settings.dynamicColor && canDynamic,
                     enabled = canDynamic,
@@ -136,73 +154,87 @@ fun SettingsScreen(settings: AppSettings, updater: Updater, onBack: () -> Unit) 
                 )
                 val canBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                 ChoiceRow(
-                    title = "Desenfoque de la interfaz",
+                    title = stringResource(R.string.settings_blur),
                     subtitle = if (canBlur) {
-                        "Efecto de cristal en las barras (puede usar más batería)"
+                        stringResource(R.string.settings_blur_desc)
                     } else {
-                        "Requiere Android 12 o superior"
+                        stringResource(R.string.requires_android12)
                     },
-                    options = listOf("Ninguno", "Suave", "Fuerte"),
+                    options = listOf(
+                        stringResource(R.string.option_none),
+                        stringResource(R.string.blur_soft),
+                        stringResource(R.string.blur_strong),
+                    ),
                     selected = if (canBlur) settings.blur else 0,
                     onSelect = { if (canBlur) settings.updateBlur(it) },
                 )
                 SwitchRow(
-                    title = "Animaciones",
-                    subtitle = "Transiciones y efectos de movimiento",
+                    title = stringResource(R.string.settings_animations),
+                    subtitle = stringResource(R.string.settings_animations_desc),
                     checked = settings.animations,
                     onChange = { settings.updateAnimations(it) },
                 )
             }
 
-            SettingsGroup("Fotos y álbumes") {
+            SettingsGroup(stringResource(R.string.settings_photos_albums)) {
                 ChoiceRow(
-                    title = "Columnas en Fotos",
-                    subtitle = "También puedes pellizcar la pantalla para cambiarlas",
+                    title = stringResource(R.string.settings_columns_photos),
+                    subtitle = stringResource(R.string.settings_columns_photos_desc),
                     options = listOf("2", "3", "4", "5"),
                     selected = settings.photoColumns - 2,
                     onSelect = { settings.updatePhotoColumns(it + 2) },
                 )
                 ChoiceRow(
-                    title = "Columnas en Álbumes",
+                    title = stringResource(R.string.settings_columns_albums),
                     options = listOf("2", "3", "4", "5"),
                     selected = settings.albumColumns - 2,
                     onSelect = { settings.updateAlbumColumns(it + 2) },
                 )
                 ChoiceRow(
-                    title = "Espacio entre miniaturas",
-                    options = listOf("Ninguno", "Pequeño", "Grande"),
+                    title = stringResource(R.string.settings_gap),
+                    options = listOf(
+                        stringResource(R.string.option_none),
+                        stringResource(R.string.gap_small),
+                        stringResource(R.string.gap_large),
+                    ),
                     selected = gapValues.indexOf(settings.gap).coerceAtLeast(0),
                     onSelect = { settings.updateGap(gapValues[it]) },
                 )
                 SwitchRow(
-                    title = "Esquinas redondeadas",
-                    subtitle = "Miniaturas con las esquinas más suaves",
+                    title = stringResource(R.string.settings_rounded),
+                    subtitle = stringResource(R.string.settings_rounded_desc),
                     checked = settings.roundedCorners,
                     onChange = { settings.updateRoundedCorners(it) },
                 )
             }
 
-            SettingsGroup("Reproductor") {
+            SettingsGroup(stringResource(R.string.settings_player)) {
                 ChoiceRow(
-                    title = "Borde del panel del reproductor",
-                    options = listOf("Ninguno", "Tema", "Animado"),
+                    title = stringResource(R.string.settings_player_border),
+                    options = listOf(
+                        stringResource(R.string.option_none),
+                        stringResource(R.string.border_theme),
+                        stringResource(R.string.border_animated),
+                    ),
                     selected = settings.playerBorder,
                     onSelect = { settings.updatePlayerBorder(it) },
                 )
                 SwitchRow(
-                    title = "Reproducir al abrir",
-                    subtitle = "Los videos empiezan solos",
+                    title = stringResource(R.string.settings_autoplay),
+                    subtitle = stringResource(R.string.settings_autoplay_desc),
                     checked = settings.autoplay,
                     onChange = { settings.updateAutoplay(it) },
                 )
             }
 
-            SettingsGroup("Icono de la aplicación") {
+            SettingsGroup(stringResource(R.string.settings_app_icon)) {
                 ChoiceRow(
-                    title = "Icono",
-                    subtitle = "Material You toma los colores de tu fondo de pantalla y, en Android 13+, " +
-                        "admite iconos temáticos. Puede tardar unos segundos en cambiar en el launcher.",
-                    options = listOf("Material You", "Por defecto"),
+                    title = stringResource(R.string.settings_icon),
+                    subtitle = stringResource(R.string.settings_icon_desc),
+                    options = listOf(
+                        stringResource(R.string.icon_material_you),
+                        stringResource(R.string.icon_default),
+                    ),
                     selected = if (settings.materialYouIcon) 0 else 1,
                     onSelect = {
                         val you = it == 0
@@ -212,9 +244,9 @@ fun SettingsScreen(settings: AppSettings, updater: Updater, onBack: () -> Unit) 
                 )
             }
 
-            SettingsGroup("Actualizaciones") {
+            SettingsGroup(stringResource(R.string.settings_updates)) {
                 ListItem(
-                    headlineContent = { Text("Buscar actualizaciones") },
+                    headlineContent = { Text(stringResource(R.string.settings_check_updates)) },
                     supportingContent = { Text(updateStatus) },
                     leadingContent = { Icon(AppIcons.Download, contentDescription = null) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -228,17 +260,17 @@ fun SettingsScreen(settings: AppSettings, updater: Updater, onBack: () -> Unit) 
                     },
                 )
                 SwitchRow(
-                    title = "Buscar al abrir la app",
-                    subtitle = "Revisa si hay una versión nueva una vez al día.",
+                    title = stringResource(R.string.settings_auto_update),
+                    subtitle = stringResource(R.string.settings_auto_update_desc),
                     checked = settings.autoUpdate,
                     onChange = { settings.updateAutoUpdate(it) },
                 )
             }
 
-            SettingsGroup("Acerca de") {
+            SettingsGroup(stringResource(R.string.settings_about)) {
                 ListItem(
-                    headlineContent = { Text("Galería") },
-                    supportingContent = { Text("Versión ${appVersion(context)} · Estable") },
+                    headlineContent = { Text(stringResource(R.string.app_name)) },
+                    supportingContent = { Text(stringResource(R.string.version_stable, appVersion(context))) },
                     leadingContent = { Icon(AppIcons.Info, contentDescription = null) },
                     trailingContent = { Icon(AppIcons.ArrowForward, contentDescription = null) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -250,6 +282,21 @@ fun SettingsScreen(settings: AppSettings, updater: Updater, onBack: () -> Unit) 
         }
     }
     }
+    }
+
+    if (showLanguage) {
+        LanguageDialog(
+            current = settings.language,
+            onSelect = { tag ->
+                showLanguage = false
+                if (tag != settings.language) {
+                    settings.updateLanguage(tag)
+                    // Se recrea la pantalla para que todo el texto cambie al nuevo idioma.
+                    context.findActivity()?.recreate()
+                }
+            },
+            onDismiss = { showLanguage = false },
+        )
     }
 }
 
@@ -358,24 +405,24 @@ fun TrashScreen(
                         onRestore(picked)
                         selected = emptySet()
                     }) {
-                        Icon(AppIcons.TrashRestore, contentDescription = "Restaurar")
+                        Icon(AppIcons.TrashRestore, contentDescription = stringResource(R.string.cd_restore))
                     }
                     IconButton(onClick = { confirm = picked }) {
-                        Icon(AppIcons.TrashX, contentDescription = "Eliminar definitivamente")
+                        Icon(AppIcons.TrashX, contentDescription = stringResource(R.string.delete_forever))
                     }
                 }
             } else {
                 TopAppBar(
-                    title = { Text("Papelera") },
+                    title = { Text(stringResource(R.string.nav_trash)) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(AppIcons.ArrowBack, contentDescription = "Volver")
+                            Icon(AppIcons.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                         }
                     },
                     actions = {
                         if (items.isNotEmpty()) {
                             IconButton(onClick = { confirm = items }) {
-                                Icon(AppIcons.Trash, contentDescription = "Vaciar papelera")
+                                Icon(AppIcons.Trash, contentDescription = stringResource(R.string.cd_empty_trash))
                             }
                         }
                     },
@@ -391,8 +438,8 @@ fun TrashScreen(
             bottom = padding.calculateBottomPadding(),
         )
         when {
-            !supported -> EmptyState(gridPadding, "La papelera requiere Android 11 o superior")
-            items.isEmpty() -> EmptyState(gridPadding, "La papelera está vacía")
+            !supported -> EmptyState(gridPadding, stringResource(R.string.trash_needs_android11))
+            items.isEmpty() -> EmptyState(gridPadding, stringResource(R.string.trash_empty))
             else -> MediaGrid(
                 items = items,
                 padding = gridPadding,
@@ -400,7 +447,7 @@ fun TrashScreen(
                 selected = selected,
                 header = {
                     Text(
-                        "Los elementos de la papelera se eliminan definitivamente pasados 30 días.",
+                        stringResource(R.string.trash_notice),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -416,24 +463,18 @@ fun TrashScreen(
     if (toDelete != null) {
         AlertDialog(
             onDismissRequest = { confirm = null },
-            title = { Text("Eliminar definitivamente") },
+            title = { Text(stringResource(R.string.delete_forever)) },
             text = {
-                Text(
-                    if (toDelete.size == 1) {
-                        "Se eliminará 1 elemento. Esta acción no se puede deshacer."
-                    } else {
-                        "Se eliminarán ${toDelete.size} elementos. Esta acción no se puede deshacer."
-                    },
-                )
+                Text(quantityString(R.plurals.delete_confirm, toDelete.size))
             },
             confirmButton = {
                 TextButton(onClick = {
                     onDeleteForever(toDelete)
                     confirm = null
                     selected = emptySet()
-                }) { Text("Eliminar") }
+                }) { Text(stringResource(R.string.action_delete)) }
             },
-            dismissButton = { TextButton(onClick = { confirm = null }) { Text("Cancelar") } },
+            dismissButton = { TextButton(onClick = { confirm = null }) { Text(stringResource(R.string.action_cancel)) } },
         )
     }
 }

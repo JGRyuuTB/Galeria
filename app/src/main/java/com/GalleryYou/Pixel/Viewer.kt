@@ -107,6 +107,7 @@ import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -305,27 +306,27 @@ fun ViewerScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     IconButton(onClick = onClose) {
-                        Icon(AppIcons.ArrowBack, contentDescription = "Volver")
+                        Icon(AppIcons.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                     Column(Modifier.weight(1f).padding(start = 4.dp)) {
                         Text(
-                            formatDate(current.dateMillis, "d MMM yyyy"),
+                            formatDateSkeleton(current.dateMillis, "dMMMyyyy"),
                             style = MaterialTheme.typography.titleMedium,
                         )
                         Text(
-                            formatDate(current.dateMillis, "HH:mm"),
+                            formatDateSkeleton(current.dateMillis, "jm"),
                             color = colors.onSurfaceVariant,
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
                     IconButton(onClick = { share(context, current) }) {
-                        Icon(AppIcons.Share, contentDescription = "Compartir")
+                        Icon(AppIcons.Share, contentDescription = stringResource(R.string.cd_share))
                     }
                     IconButton(onClick = { onTrash(current) }) {
-                        Icon(AppIcons.Trash, contentDescription = "Mover a la papelera")
+                        Icon(AppIcons.Trash, contentDescription = stringResource(R.string.move_to_trash))
                     }
                     IconButton(onClick = { showInfo = true }) {
-                        Icon(AppIcons.Info, contentDescription = "Detalles")
+                        Icon(AppIcons.Info, contentDescription = stringResource(R.string.details))
                     }
                 }
             }
@@ -794,7 +795,7 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
 
         if (failed) {
             Text(
-                "No se puede reproducir este video",
+                stringResource(R.string.video_cannot_play),
                 modifier = Modifier.align(Alignment.Center),
             )
         }
@@ -877,7 +878,7 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             IconButton(onClick = { seekBy(-10_000) }) {
-                                Icon(AppIcons.Replay10, contentDescription = "Retroceder 10 segundos")
+                                Icon(AppIcons.Replay10, contentDescription = stringResource(R.string.cd_rewind_10))
                             }
                             PlayPauseButton(
                                 isPlaying = isPlaying,
@@ -886,7 +887,7 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
                                 onClick = { togglePlay() },
                             )
                             IconButton(onClick = { seekBy(10_000) }) {
-                                Icon(AppIcons.Forward10, contentDescription = "Avanzar 10 segundos")
+                                Icon(AppIcons.Forward10, contentDescription = stringResource(R.string.cd_forward_10))
                             }
                         }
 
@@ -899,7 +900,7 @@ private fun VideoPlayerContent(m: MediaFile, chrome: Boolean, settings: AppSetti
                         ) {
                             Icon(
                                 if (muted) AppIcons.VolumeOff else AppIcons.VolumeUp,
-                                contentDescription = if (muted) "Activar sonido" else "Silenciar",
+                                contentDescription = stringResource(if (muted) R.string.cd_unmute else R.string.cd_mute),
                             )
                         }
                     }
@@ -1015,14 +1016,14 @@ private fun InfoSheet(m: MediaFile, onDismiss: () -> Unit) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
             Text(
-                "Detalles",
+                stringResource(R.string.details),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
             )
             InfoRow(
                 icon = { Icon(AppIcons.Calendar, contentDescription = null) },
-                title = formatDate(m.dateMillis, "EEEE, d 'de' MMMM yyyy"),
-                subtitle = formatDate(m.dateMillis, "HH:mm"),
+                title = formatDateSkeleton(m.dateMillis, "EEEEdMMMMyyyy"),
+                subtitle = formatDateSkeleton(m.dateMillis, "jm"),
             )
             InfoRow(
                 icon = {
@@ -1046,14 +1047,14 @@ private fun InfoSheet(m: MediaFile, onDismiss: () -> Unit) {
                 InfoRow(
                     icon = { Icon(AppIcons.Timer, contentDescription = null) },
                     title = formatDuration(m.durationMs),
-                    subtitle = "Duración",
+                    subtitle = stringResource(R.string.info_duration),
                 )
             }
             if (m.bucket.isNotBlank()) {
                 InfoRow(
                     icon = { Icon(AppIcons.Collections, contentDescription = null) },
                     title = m.bucket,
-                    subtitle = "Álbum",
+                    subtitle = stringResource(R.string.info_album),
                 )
             }
         }
