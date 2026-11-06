@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Galeria"
+rootProject.name = "Pixel-Gallery-You"
 include(":app")

@@ -1,5 +1,13 @@
 # Registro de cambios
 
+## 1.1.0 — Estable
+
+- Actualizaciones OTA: la app busca versiones nuevas en GitHub Releases, las descarga y lanza el instalador (Ajustes > Actualizaciones).
+- "Acerca de": foto de perfil de GitHub sincronizada y logo del canal de Telegram.
+- Animaciones: el visor crece desde la miniatura al abrirse y vuelve a ella al cerrarse; los álbumes, "Acerca de" y la barra de selección entran y salen con transiciones suaves; las miniaturas aparecen con un fundido.
+- El proyecto pasa a llamarse Pixel-Gallery-You.
+- Ahora la app usa internet (solo para las actualizaciones, la foto de GitHub y el logo del canal).
+
 ## 1.0.0 — Primera versión estable
 
 - Galería de fotos y videos con cuadrícula fluida, pellizcar para cambiar columnas y precarga de miniaturas.

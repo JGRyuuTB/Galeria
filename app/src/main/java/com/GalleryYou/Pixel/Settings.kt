@@ -49,6 +49,21 @@ class AppSettings(context: Context) {
         prefs.edit().putInt("blur", value).apply()
     }
 
+    var autoUpdate by mutableStateOf(prefs.getBoolean("autoUpdate", true))
+        private set
+
+    fun updateAutoUpdate(value: Boolean) {
+        autoUpdate = value
+        prefs.edit().putBoolean("autoUpdate", value).apply()
+    }
+
+    /** Momento (ms) de la última búsqueda automática de actualizaciones. */
+    val lastUpdateCheck: Long get() = prefs.getLong("lastUpdateCheck", 0L)
+
+    fun markUpdateChecked() {
+        prefs.edit().putLong("lastUpdateCheck", System.currentTimeMillis()).apply()
+    }
+
     var onboardingDone by mutableStateOf(prefs.getBoolean("onboardingDone", false))
         private set
 

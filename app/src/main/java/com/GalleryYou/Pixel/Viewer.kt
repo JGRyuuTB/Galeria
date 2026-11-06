@@ -151,6 +151,8 @@ fun ViewerScreen(
     settings: AppSettings,
     onClose: () -> Unit,
     onTrash: (MediaFile) -> Unit,
+    onPageChanged: (android.net.Uri) -> Unit = {},
+    onDragDismiss: () -> Unit = onClose,
 ) {
     val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
@@ -162,6 +164,7 @@ fun ViewerScreen(
     var zoomed by remember { mutableStateOf(false) }
     var showInfo by remember { mutableStateOf(false) }
     val current = items[pagerState.currentPage.coerceIn(0, items.lastIndex)]
+    LaunchedEffect(current.uri) { onPageChanged(current.uri) }
     val darkIcons = colors.surface.luminance() > 0.5f
     val scope = rememberCoroutineScope()
     var drag by remember { mutableFloatStateOf(0f) }
@@ -200,7 +203,7 @@ fun ViewerScreen(
                                             animate(drag, viewHeight.toFloat(), animationSpec = tween(200)) { value, _ ->
                                                 drag = value
                                             }
-                                            onClose()
+                                            onDragDismiss()
                                         } else {
                                             animate(
                                                 drag,

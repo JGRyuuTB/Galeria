@@ -78,6 +78,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -103,7 +104,7 @@ fun buildThumbRequest(context: android.content.Context, uri: Uri, size: Int): Im
     ImageRequest.Builder(context)
         .data(uri)
         .size(size)
-        .crossfade(false)
+        .crossfade(140)
         .setParameter(THUMB_PARAM, true)
         .build()
 
@@ -368,6 +369,7 @@ fun Thumb(
 ) {
     val haptic = LocalHapticFeedback.current
     val interaction = remember { MutableInteractionSource() }
+    val registry = LocalThumbRegistry.current
 
     // Solo hay estado animado cuando se está seleccionando; al desplazarse cada miniatura es barata.
     val scale: State<Float>? = if (selectionMode) {
@@ -388,6 +390,7 @@ fun Thumb(
     Box(
         modifier = modifier
             .aspectRatio(1f)
+            .onGloballyPositioned { registry?.put(m.uri, it) }
             .then(
                 if (scale != null) {
                     Modifier.graphicsLayer {

@@ -455,6 +455,18 @@ object AppIcons {
             line("M18,10.9 C18,14.6 14.6,14.6 11.6,14.8 C8.4,15 6,15.6 6,15.9"),
         )
     }
+    val Download: ImageVector by lazy {
+        build("Download",
+            line("M12,4 V14.8 M7.6,10.6 L12,15 L16.4,10.6"),
+            line("M4.5,19.5 H19.5"),
+        )
+    }
+    val Refresh: ImageVector by lazy {
+        build("Refresh",
+            line("M19.5,12 A7.5,7.5 0 1 1 16.9,6.4"),
+            line("M19.5,4.5 V8.8 H15.2"),
+        )
+    }
 
     // ------------------------------------------------------------------ Constructor
 

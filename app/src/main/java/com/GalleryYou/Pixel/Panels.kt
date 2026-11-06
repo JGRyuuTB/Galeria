@@ -3,6 +3,17 @@ package com.GalleryYou.Pixel
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.BackHandler
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -49,17 +60,41 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
+fun SettingsScreen(settings: AppSettings, updater: Updater, onBack: () -> Unit) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val canDynamic = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val gapValues = listOf(0, 2, 6)
     var showAbout by rememberSaveable { mutableStateOf(false) }
     BackHandler(enabled = showAbout) { showAbout = false }
-    if (showAbout) {
-        AboutScreen(onBack = { showAbout = false })
-        return
+    val updateStatus = when (val st = updater.state) {
+        is UpdateState.Checking -> "Buscando…"
+        is UpdateState.Available -> "Disponible: versión ${st.info.version}"
+        is UpdateState.UpToDate -> "Estás al día (${updater.currentVersion})"
+        is UpdateState.Downloading -> "Descargando…"
+        is UpdateState.Ready -> "Lista para instalar"
+        is UpdateState.Failed -> st.message
+        is UpdateState.Idle -> "Versión ${updater.currentVersion}"
     }
 
+    AnimatedContent(
+        targetState = showAbout,
+        transitionSpec = {
+            if (!settings.animations) {
+                EnterTransition.None togetherWith ExitTransition.None
+            } else if (targetState) {
+                (slideInHorizontally(tween(300)) { w -> w / 3 } + fadeIn(tween(240))) togetherWith
+                    (slideOutHorizontally(tween(300)) { w -> -w / 6 } + fadeOut(tween(180)))
+            } else {
+                (slideInHorizontally(tween(300)) { w -> -w / 6 } + fadeIn(tween(240))) togetherWith
+                    (slideOutHorizontally(tween(300)) { w -> w / 3 } + fadeOut(tween(180)))
+            }
+        },
+        label = "about",
+    ) { about ->
+    if (about) {
+        AboutScreen(onBack = { showAbout = false })
+    } else {
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
@@ -177,10 +212,33 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
                 )
             }
 
+            SettingsGroup("Actualizaciones") {
+                ListItem(
+                    headlineContent = { Text("Buscar actualizaciones") },
+                    supportingContent = { Text(updateStatus) },
+                    leadingContent = { Icon(AppIcons.Download, contentDescription = null) },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    modifier = Modifier.clickable {
+                        val st = updater.state
+                        if (st is UpdateState.Available || st is UpdateState.Ready || st is UpdateState.Downloading) {
+                            updater.dialogVisible = true
+                        } else {
+                            scope.launch { updater.check(manual = true) }
+                        }
+                    },
+                )
+                SwitchRow(
+                    title = "Buscar al abrir la app",
+                    subtitle = "Revisa si hay una versión nueva una vez al día.",
+                    checked = settings.autoUpdate,
+                    onChange = { settings.updateAutoUpdate(it) },
+                )
+            }
+
             SettingsGroup("Acerca de") {
                 ListItem(
                     headlineContent = { Text("Galería") },
-                    supportingContent = { Text("Versión 1.0.0 · Estable") },
+                    supportingContent = { Text("Versión ${appVersion(context)} · Estable") },
                     leadingContent = { Icon(AppIcons.Info, contentDescription = null) },
                     trailingContent = { Icon(AppIcons.ArrowForward, contentDescription = null) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -190,6 +248,8 @@ fun SettingsScreen(settings: AppSettings, onBack: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
         }
+    }
+    }
     }
 }
 

@@ -2,7 +2,7 @@
   <img src="app/banner.png" width="70%" alt="Pixel Gallery banner">
 </p>
 
-# Pixel Gallery 🖼️
+# Pixel Gallery You 🖼️
 
 <p align="center">
   <b>An open-source photo and video gallery for Android</b><br>
@@ -17,8 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/JGRyuuTB/Galeria/releases/latest"><img src="https://img.shields.io/github/v/release/JGRyuuTB/Galeria?include_prereleases&logo=github&style=for-the-badge&label=Latest%20version" alt="Latest version"></a>
-  <a href="https://github.com/JGRyuuTB/Galeria/releases"><img src="https://img.shields.io/github/downloads/JGRyuuTB/Galeria/total?logo=github&style=for-the-badge" alt="Downloads"></a>
+  <a href="https://github.com/JGRyuuTB/Pixel-gallery-You/releases/latest"><img src="https://img.shields.io/github/v/release/JGRyuuTB/Pixel-gallery-You?include_prereleases&logo=github&style=for-the-badge&label=Latest%20version" alt="Latest version"></a>
+  <a href="https://github.com/JGRyuuTB/Pixel-gallery-You/releases"><img src="https://img.shields.io/github/downloads/JGRyuuTB/Pixel-gallery-You/total?logo=github&style=for-the-badge" alt="Downloads"></a>
   <img src="https://img.shields.io/badge/Android-8.0%2B-green?style=for-the-badge&logo=android" alt="Android 8.0+">
   <img src="https://img.shields.io/badge/Kotlin-100%25-purple?style=for-the-badge&logo=kotlin" alt="Kotlin">
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT">
@@ -32,11 +32,12 @@
 
 - **Material You**: dynamic colors that adapt to your wallpaper.
 - **Floating glass navigation bar** with optional blur (None / Soft / Strong).
-- **Smooth animations**: transitions and motion effects you can turn off.
+- **Smooth animations**: the viewer grows from the thumbnail and returns to it, albums and menus slide in and out. You can turn them off.
 - **Light, dark or system theme.**
 - **Rounded corners** on thumbnails and a customizable border on the player panel.
 - **Material You app icon** that picks up your wallpaper colors (or the default icon).
 - **Predictive back** gesture support.
+- **In-app (OTA) updates** from GitHub Releases.
 
 ### 📷 Photos & Albums
 
@@ -64,7 +65,7 @@
 
 - **No ads.**
 - **No trackers.**
-- **No internet connection**: the app doesn't need or request the network permission.
+- **Internet is used only for** in-app updates, your GitHub profile photo and the Telegram channel logo in the About screen.
 
 ---
 
@@ -91,7 +92,7 @@
 
 ## ⬇️ Download
 
-Download the APK from the [Releases](https://github.com/JGRyuuTB/Galeria/releases/latest) page.
+Download the APK from the [Releases](https://github.com/JGRyuuTB/Pixel-gallery-You/releases/latest) page.
 
 You can also follow new versions on the Telegram channel: [Dragon's Bastion](https://t.me/dragonsbastion).
 
@@ -101,14 +102,14 @@ You can also follow new versions on the Telegram channel: [Dragon's Bastion](htt
 
 The project is built automatically with GitHub Actions (`.github/workflows/build-apk.yml`):
 
-1. Push to `main` and download the `Galeria-apk` artifact from the **Actions** tab.
-2. To publish a release, create a `v1.0.0` tag and push it: the APK is attached to the Release.
+1. Push to `main` and download the `Pixel-Gallery-You-apk` artifact from the **Actions** tab.
+2. To publish a release, create a `v1.1.0` tag and push it: the APK is attached to the Release, and installed apps will offer it as an update.
 
 Locally:
 
 ```bash
-git clone https://github.com/JGRyuuTB/Galeria.git
-cd Galeria
+git clone https://github.com/JGRyuuTB/Pixel-gallery-You.git
+cd Pixel-gallery-You
 gradle assembleRelease   # requires JDK 17
 ```
 
@@ -124,6 +125,9 @@ app/src/main/java/com/GalleryYou/Pixel/
 ├── Viewer.kt         # Photo viewer and video player
 ├── Settings.kt       # Settings and preferences
 ├── About.kt          # "About" screen
+├── Updater.kt        # OTA updates (GitHub Releases)
+├── UpdateDialog.kt   # Update dialog
+├── Transitions.kt    # Thumbnail → viewer transition
 ├── Onboarding.kt     # First-run welcome
 ├── Panels.kt         # Panels and dialogs
 ├── Backdrop.kt       # Glass blur effect
@@ -140,6 +144,8 @@ app/src/main/java/com/GalleryYou/Pixel/
 | Permission | Purpose |
 |---|---|
 | Photos and videos | Show your collection |
+| Internet | Check for updates, GitHub photo and channel logo |
+| Install packages | Install the update you download |
 
 ---
 

@@ -2,6 +2,18 @@ package com.GalleryYou.Pixel
 
 import android.content.Context
 import android.content.Intent
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import java.net.URL
+import java.net.HttpURLConnection
+import coil.request.ImageRequest
+import coil.imageLoader
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.Box
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.Canvas
@@ -46,6 +58,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 private const val GITHUB_URL = "https://github.com/JGRyuuTB"
+private const val GITHUB_AVATAR_URL = "https://github.com/JGRyuuTB.png?size=240"
 private const val TELEGRAM_URL = "https://t.me/JG_ryuu"
 private const val CHANNEL_URL = "https://t.me/dragonsbastion"
 
@@ -55,6 +68,16 @@ private const val CHANNEL_URL = "https://t.me/dragonsbastion"
 fun AboutScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
+
+    // Logo del canal: se lee de la página pública del canal y se recuerda para la próxima vez.
+    val channelPrefs = remember { context.getSharedPreferences("about_cache", Context.MODE_PRIVATE) }
+    val channelPhoto by produceState(initialValue = channelPrefs.getString("channelPhoto", null)) {
+        val fresh = fetchChannelPhoto(CHANNEL_URL)
+        if (fresh != null) {
+            value = fresh
+            channelPrefs.edit().putString("channelPhoto", fresh).apply()
+        }
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -110,7 +133,7 @@ fun AboutScreen(onBack: () -> Unit) {
                     }
                     Surface(shape = CircleShape, color = scheme.tertiaryContainer) {
                         Text(
-                            "Versión 1.0.0 · Estable",
+                            "Versión ${appVersion(context)} · Estable",
                             style = MaterialTheme.typography.titleMedium,
                             color = scheme.onTertiaryContainer,
                             modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp),
@@ -122,6 +145,7 @@ fun AboutScreen(onBack: () -> Unit) {
                     ) {
                         InfoChip(AppIcons.Globe, "Código abierto")
                         InfoChip(AppIcons.Sparkle, "Sin anuncios")
+                        InfoChip(AppIcons.Download, "Actualizaciones OTA")
                         InfoChip(AppIcons.Palette, "Material 3")
                     }
                 }
@@ -139,7 +163,18 @@ fun AboutScreen(onBack: () -> Unit) {
                     Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Box64("JG")
+                    RemoteAvatar(
+                        url = GITHUB_AVATAR_URL,
+                        size = 64.dp,
+                        fallback = {
+                            Text(
+                                "JG",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = scheme.onPrimaryContainer,
+                            )
+                        },
+                    )
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
                         Text(
@@ -178,20 +213,18 @@ fun AboutScreen(onBack: () -> Unit) {
             ) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Surface(shape = CircleShape, color = scheme.secondaryContainer, modifier = Modifier.size(52.dp)) {
-                            Column(
-                                Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
+                        RemoteAvatar(
+                            url = channelPhoto,
+                            size = 56.dp,
+                            fallback = {
                                 Icon(
                                     AppIcons.Megaphone,
                                     contentDescription = null,
-                                    tint = scheme.onSecondaryContainer,
+                                    tint = scheme.onPrimaryContainer,
                                     modifier = Modifier.size(26.dp),
                                 )
-                            }
-                        }
+                            },
+                        )
                         Spacer(Modifier.width(14.dp))
                         Column {
                             Text(
@@ -232,7 +265,8 @@ fun AboutScreen(onBack: () -> Unit) {
                     )
                     Text(
                         "Hecha con Jetpack Compose, Material 3, Media3 y Coil, todos con licencia Apache 2.0. " +
-                            "Paquete com.GalleryYou.Pixel.",
+                            "Paquete com.GalleryYou.Pixel. Usa internet solo para buscar actualizaciones y " +
+                            "mostrar la foto de GitHub y el logo del canal.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = scheme.onSurfaceVariant,
                     )
@@ -275,23 +309,47 @@ private fun InfoChip(icon: ImageVector, text: String) {
     }
 }
 
-/** Avatar con las iniciales (la app no usa internet, así que no descarga fotos de perfil). */
+/**
+ * Imagen redonda descargada de internet. Mientras carga (o si no hay conexión) se ve el
+ * [fallback]. Usa el cargador de Coil estándar, que respeta la caché de GitHub y por eso
+ * la foto se actualiza sola cuando cambias tu foto de perfil.
+ */
 @Composable
-private fun Box64(initials: String) {
-    val scheme = MaterialTheme.colorScheme
-    Surface(shape = CircleShape, color = scheme.primaryContainer, modifier = Modifier.size(64.dp)) {
-        Column(
-            Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                initials,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = scheme.onPrimaryContainer,
+private fun RemoteAvatar(url: String?, size: Dp, fallback: @Composable () -> Unit) {
+    val context = LocalContext.current
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center,
+    ) {
+        fallback()
+        if (url != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(context).data(url).crossfade(300).build(),
+                imageLoader = context.imageLoader,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
             )
         }
+    }
+}
+
+/** Lee la foto del canal de Telegram desde su página pública (etiqueta og:image). */
+private suspend fun fetchChannelPhoto(url: String): String? = withContext(Dispatchers.IO) {
+    try {
+        val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 8_000
+            readTimeout = 8_000
+            setRequestProperty("User-Agent", "Mozilla/5.0 (Android) PixelGalleryYou")
+        }
+        val html = conn.inputStream.bufferedReader().use { it.readText() }
+        Regex("<meta property=\"og:image\" content=\"([^\"]+)\"")
+            .find(html)?.groupValues?.get(1)?.replace("&amp;", "&")
+    } catch (e: Exception) {
+        null
     }
 }
 

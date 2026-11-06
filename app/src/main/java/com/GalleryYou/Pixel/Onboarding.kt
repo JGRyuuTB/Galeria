@@ -210,7 +210,7 @@ private fun WelcomeStep(animate: Boolean) {
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             Surface(shape = CircleShape, color = scheme.surfaceContainerHigh) {
                 Text(
-                    "Versión 1.0 · Estable",
+                    "Versión ${appVersion(LocalContext.current)} · Estable",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(horizontal = 22.dp, vertical = 10.dp),

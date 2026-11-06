@@ -21,6 +21,12 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.util.lerp
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
@@ -112,6 +118,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GaleriaApp(settings: AppSettings) {
     val context = LocalContext.current
+    val updater = remember { Updater(context.applicationContext) }
     val imageLoader = remember {
         ImageLoader.Builder(context)
             .components {
@@ -150,6 +157,17 @@ fun GaleriaApp(settings: AppSettings) {
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { result -> granted = result.values.all { it } }
 
+    // Búsqueda automática de actualizaciones: como mucho cada 12 horas y solo con la app lista.
+    LaunchedEffect(settings.onboardingDone, granted) {
+        if (settings.onboardingDone && granted && settings.autoUpdate) {
+            val now = System.currentTimeMillis()
+            if (now - settings.lastUpdateCheck > 12L * 60L * 60L * 1000L) {
+                settings.markUpdateChecked()
+                updater.check(manual = false)
+            }
+        }
+    }
+
     CompositionLocalProvider(LocalGalleryLoader provides imageLoader) {
         if (!settings.onboardingDone) {
             Onboarding(
@@ -179,14 +197,15 @@ fun GaleriaApp(settings: AppSettings) {
                 },
             )
         } else {
-            GalleryRoot(settings)
+            GalleryRoot(settings, updater)
         }
+        UpdateDialog(updater)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GalleryRoot(settings: AppSettings) {
+fun GalleryRoot(settings: AppSettings, updater: Updater) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -296,10 +315,44 @@ fun GalleryRoot(settings: AppSettings) {
         }
     }
 
+    // Transición del visor: crece desde la miniatura y vuelve a ella al cerrarse.
+    val thumbRegistry = remember { ThumbRegistry() }
+    val viewerProgress = remember { Animatable(0f) }
+    var viewerVisible by remember { mutableStateOf(false) }
+    var viewerOrigin by remember { mutableStateOf<Rect?>(null) }
+    var viewerCurrent by remember { mutableStateOf<Uri?>(null) }
+    var dragDismissed by remember { mutableStateOf(false) }
+
     fun open(items: List<MediaFile>, index: Int) {
         val request = ViewerRequest(items, index)
         lastViewer = request
+        val first = items.getOrNull(index)?.uri
+        viewerCurrent = first
+        viewerOrigin = thumbRegistry.boundsOf(first)
         viewer = request
+    }
+
+    val viewerOpen = viewer != null
+    LaunchedEffect(viewerOpen) {
+        if (viewerOpen) {
+            viewerVisible = true
+            if (settings.animations) {
+                viewerProgress.snapTo(0f)
+                viewerProgress.animateTo(1f, tween(340, easing = FastOutSlowInEasing))
+            } else {
+                viewerProgress.snapTo(1f)
+            }
+        } else if (viewerVisible) {
+            if (dragDismissed || !settings.animations) {
+                viewerProgress.snapTo(0f)
+            } else {
+                // Vuelve a la miniatura de la foto que se estaba viendo (si sigue en pantalla).
+                viewerOrigin = thumbRegistry.boundsOf(viewerCurrent)
+                viewerProgress.animateTo(0f, tween(300, easing = FastOutSlowInEasing))
+            }
+            viewerVisible = false
+            dragDismissed = false
+        }
     }
 
     fun toggle(m: MediaFile) {
@@ -329,13 +382,36 @@ fun GalleryRoot(settings: AppSettings) {
     BackHandler(enabled = viewer != null) { viewer = null }
 
     Box(Modifier.fillMaxSize()) {
+        val screen = when {
+            media == null -> 0L
+            openAlbum != null -> 1000L + openAlbum.id
+            else -> 1L
+        }
+        AnimatedContent(
+            targetState = screen,
+            modifier = Modifier.fillMaxSize(),
+            transitionSpec = {
+                if (!settings.animations) {
+                    EnterTransition.None togetherWith ExitTransition.None
+                } else if (targetState >= 1000L && initialState < 1000L) {
+                    (slideInHorizontally(tween(320, easing = FastOutSlowInEasing)) { w -> w / 3 } + fadeIn(tween(260))) togetherWith
+                        (slideOutHorizontally(tween(320, easing = FastOutSlowInEasing)) { w -> -w / 6 } + fadeOut(tween(200)))
+                } else if (initialState >= 1000L && targetState < 1000L) {
+                    (slideInHorizontally(tween(320, easing = FastOutSlowInEasing)) { w -> -w / 6 } + fadeIn(tween(260))) togetherWith
+                        (slideOutHorizontally(tween(320, easing = FastOutSlowInEasing)) { w -> w / 3 } + fadeOut(tween(200)))
+                } else {
+                    fadeIn(tween(200)) togetherWith fadeOut(tween(120))
+                }
+            },
+            label = "screens",
+        ) { s ->
         when {
-            media == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            s == 0L -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
 
-            openAlbum != null -> AlbumDetail(
-                album = openAlbum,
+            s >= 1000L -> albums.firstOrNull { it.id == s - 1000L }?.let { album -> AlbumDetail(
+                album = album,
                 settings = settings,
                 selected = selected,
                 onBack = {
@@ -343,14 +419,14 @@ fun GalleryRoot(settings: AppSettings) {
                     selected = emptySet()
                 },
                 onClick = { m, index ->
-                    if (selected.isNotEmpty()) toggle(m) else open(openAlbum.items, index)
+                    if (selected.isNotEmpty()) toggle(m) else open(album.items, index)
                 },
                 onLongClick = { m -> toggle(m) },
                 onClearSelection = { selected = emptySet() },
-                onSelectAll = { selected = openAlbum.items.map { it.uri }.toSet() },
+                onSelectAll = { selected = album.items.map { it.uri }.toSet() },
                 onMove = { moveItems = selectedItems },
                 onTrash = { trashItems(selectedItems) },
-            )
+            ) }
 
             else -> {
                 val inSelection = selected.isNotEmpty() && tab == 0
@@ -358,7 +434,19 @@ fun GalleryRoot(settings: AppSettings) {
                 Scaffold(
                     topBar = {
                         if (tab <= 1) {
-                            if (inSelection) {
+                            AnimatedContent(
+                                targetState = inSelection,
+                                transitionSpec = {
+                                    if (settings.animations) {
+                                        (fadeIn(tween(220)) + slideInVertically(tween(220)) { h -> -h / 3 }) togetherWith
+                                            fadeOut(tween(120))
+                                    } else {
+                                        EnterTransition.None togetherWith ExitTransition.None
+                                    }
+                                },
+                                label = "topBar",
+                            ) { sel ->
+                            if (sel) {
                                 SelectionTopBar(
                                     count = selected.size,
                                     backdrop = backdrop,
@@ -390,6 +478,7 @@ fun GalleryRoot(settings: AppSettings) {
                                         ),
                                     )
                                 }
+                            }
                             }
                         }
                     },
@@ -471,28 +560,58 @@ fun GalleryRoot(settings: AppSettings) {
                             }
 
                             else -> Box(bottomOnly) {
-                                SettingsScreen(settings = settings, onBack = { tab = 0 })
+                                SettingsScreen(settings = settings, updater = updater, onBack = { tab = 0 })
                             }
                         }
                     }
                 }
             }
         }
+        }
 
         // Visor de fotos y videos.
         val shown = viewer ?: lastViewer
-        AnimatedVisibility(
-            visible = viewer != null,
-            enter = fadeIn() + scaleIn(initialScale = 0.92f),
-            exit = fadeOut() + scaleOut(targetScale = 0.92f),
-        ) {
+        if (viewerVisible) {
             shown?.let { request ->
-                ViewerScreen(
-                    request = request,
-                    settings = settings,
-                    onClose = { viewer = null },
-                    onTrash = { m -> trashItems(listOf(m)) { viewer = null } },
-                )
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            val p = viewerProgress.value
+                            val o = viewerOrigin
+                            val w = size.width
+                            val h = size.height
+                            if (o != null && w > 0f && h > 0f) {
+                                // Crece desde la miniatura: misma posición y tamaño al inicio.
+                                val s0 = o.width / w
+                                val s = lerp(s0, 1f, p)
+                                scaleX = s
+                                scaleY = s
+                                translationX = lerp(o.center.x - w / 2f, 0f, p)
+                                translationY = lerp(o.center.y - h / 2f, 0f, p)
+                                alpha = (p * 4f).coerceIn(0f, 1f)
+                                clip = true
+                                shape = RevealShape(p, o.height / o.width, s)
+                            } else {
+                                val s = 0.92f + 0.08f * p
+                                scaleX = s
+                                scaleY = s
+                                alpha = p.coerceIn(0f, 1f)
+                            }
+                        },
+                ) {
+                    ViewerScreen(
+                        request = request,
+                        settings = settings,
+                        onClose = { viewer = null },
+                        onTrash = { m -> trashItems(listOf(m)) { viewer = null } },
+                        onPageChanged = { viewerCurrent = it },
+                        onDragDismiss = {
+                            dragDismissed = true
+                            viewer = null
+                        },
+                    )
+                }
             }
         }
     }
