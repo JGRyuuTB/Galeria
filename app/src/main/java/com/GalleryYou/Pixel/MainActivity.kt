@@ -84,6 +84,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/** Pantalla visible: 0 = cargando, 1 = pestañas, 2 = álbum abierto (los ids de álbum pueden ser negativos). */
+private data class ScreenKey(val kind: Int, val id: Long = 0L)
+
 private val LightScrim = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
 private val DarkScrim = android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)
 
@@ -381,11 +384,12 @@ fun GalleryRoot(settings: AppSettings, updater: Updater) {
     BackHandler(enabled = tab >= 2) { tab = 0 }
     BackHandler(enabled = viewer != null) { viewer = null }
 
+    CompositionLocalProvider(LocalThumbRegistry provides thumbRegistry) {
     Box(Modifier.fillMaxSize()) {
         val screen = when {
-            media == null -> 0L
-            openAlbum != null -> 1000L + openAlbum.id
-            else -> 1L
+            media == null -> ScreenKey(0)
+            openAlbum != null -> ScreenKey(2, openAlbum.id)
+            else -> ScreenKey(1)
         }
         AnimatedContent(
             targetState = screen,
@@ -393,10 +397,10 @@ fun GalleryRoot(settings: AppSettings, updater: Updater) {
             transitionSpec = {
                 if (!settings.animations) {
                     EnterTransition.None togetherWith ExitTransition.None
-                } else if (targetState >= 1000L && initialState < 1000L) {
+                } else if (targetState.kind == 2 && initialState.kind != 2) {
                     (slideInHorizontally(tween(320, easing = FastOutSlowInEasing)) { w -> w / 3 } + fadeIn(tween(260))) togetherWith
                         (slideOutHorizontally(tween(320, easing = FastOutSlowInEasing)) { w -> -w / 6 } + fadeOut(tween(200)))
-                } else if (initialState >= 1000L && targetState < 1000L) {
+                } else if (initialState.kind == 2 && targetState.kind != 2) {
                     (slideInHorizontally(tween(320, easing = FastOutSlowInEasing)) { w -> -w / 6 } + fadeIn(tween(260))) togetherWith
                         (slideOutHorizontally(tween(320, easing = FastOutSlowInEasing)) { w -> w / 3 } + fadeOut(tween(200)))
                 } else {
@@ -406,11 +410,11 @@ fun GalleryRoot(settings: AppSettings, updater: Updater) {
             label = "screens",
         ) { s ->
         when {
-            s == 0L -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            s.kind == 0 -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
 
-            s >= 1000L -> albums.firstOrNull { it.id == s - 1000L }?.let { album -> AlbumDetail(
+            s.kind == 2 -> albums.firstOrNull { it.id == s.id }?.let { album -> AlbumDetail(
                 album = album,
                 settings = settings,
                 selected = selected,
@@ -614,6 +618,7 @@ fun GalleryRoot(settings: AppSettings, updater: Updater) {
                 }
             }
         }
+    }
     }
 
     val toMove = moveItems

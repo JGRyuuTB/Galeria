@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 fun UpdateDialog(updater: Updater) {
     if (!updater.dialogVisible) return
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     when (val st = updater.state) {
         is UpdateState.Available -> AlertDialog(
@@ -92,6 +94,17 @@ fun UpdateDialog(updater: Updater) {
             title = { Text("No se pudo actualizar") },
             text = { Text(st.message) },
             confirmButton = { TextButton(onClick = { updater.dismiss() }) { Text("Cerrar") } },
+            dismissButton = {
+                TextButton(onClick = {
+                    updater.dismiss()
+                    context.startActivity(
+                        android.content.Intent(
+                            android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            android.net.Uri.fromParts("package", context.packageName, null),
+                        ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                }) { Text("Ajustes de la app") }
+            },
         )
 
         UpdateState.UpToDate -> AlertDialog(

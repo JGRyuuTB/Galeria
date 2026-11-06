@@ -2,6 +2,7 @@ package com.GalleryYou.Pixel
 
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import androidx.compose.runtime.getValue
@@ -10,7 +11,12 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.FileProvider
 import java.io.File
 import java.net.HttpURLConnection
+import java.net.ConnectException
+import java.net.NoRouteToHostException
+import java.net.SocketTimeoutException
 import java.net.URL
+import java.net.UnknownHostException
+import javax.net.ssl.SSLException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -61,6 +67,43 @@ class Updater(context: Context) {
 
     val currentVersion: String = appVersion(appContext)
 
+    /** Abre la conexión por la red activa (así respeta Wi-Fi, datos y VPN); si no se puede, usa la normal. */
+    private fun openConnection(url: String): HttpURLConnection {
+        val u = URL(url)
+        val network = try {
+            (appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager)?.activeNetwork
+        } catch (e: Exception) {
+            null
+        }
+        var conn: java.net.URLConnection? = null
+        if (network != null) {
+            try {
+                conn = network.openConnection(u)
+            } catch (e: Exception) {
+                conn = null
+            }
+        }
+        return (conn ?: u.openConnection()) as HttpURLConnection
+    }
+
+    /** Explica el fallo con su causa real en vez de culpar siempre a la conexión. */
+    private fun describe(e: Exception): String = when (e) {
+        is UnknownHostException, is ConnectException, is NoRouteToHostException ->
+            "La app no puede salir a internet. Si usas un firewall, VPN o control de red " +
+                "(por ejemplo el del sistema, NetGuard o un bloqueador), permite a Galería usar Wi-Fi y datos."
+        is SocketTimeoutException ->
+            "La conexión tardó demasiado. Revisa tu internet o el firewall e inténtalo de nuevo."
+        is SSLException ->
+            "No se pudo abrir una conexión segura. Revisa la fecha y hora del teléfono o tu VPN."
+        is IllegalStateException ->
+            when {
+                e.message?.contains("403") == true ->
+                    "GitHub limitó las consultas por ahora. Inténtalo de nuevo en un rato."
+                else -> "El servidor respondió con un error (${e.message}). Inténtalo más tarde."
+            }
+        else -> "No se pudo completar (${e.javaClass.simpleName}). Inténtalo de nuevo."
+    }
+
     /** Busca una versión nueva. Con [manual] el resultado (al día o error) también se muestra. */
     suspend fun check(manual: Boolean) {
         if (state is UpdateState.Checking || state is UpdateState.Downloading) return
@@ -69,7 +112,7 @@ class Updater(context: Context) {
         withContext(Dispatchers.IO) {
             try {
                 val url = "https://api.github.com/repos/${UpdateConfig.OWNER}/${UpdateConfig.REPO}/releases/latest"
-                val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+                val conn = openConnection(url).apply {
                     connectTimeout = 10_000
                     readTimeout = 10_000
                     setRequestProperty("Accept", "application/vnd.github+json")
@@ -108,7 +151,7 @@ class Updater(context: Context) {
                 dialogVisible = true
             } catch (e: Exception) {
                 state = if (manual) {
-                    UpdateState.Failed("No se pudo comprobar. Revisa tu conexión a internet.")
+                    UpdateState.Failed(describe(e))
                 } else {
                     UpdateState.Idle
                 }
@@ -120,11 +163,12 @@ class Updater(context: Context) {
     suspend fun downloadAndInstall() {
         val info = (state as? UpdateState.Available)?.info ?: return
         state = UpdateState.Downloading(info, 0f)
+        var downloadError: String? = null
         val file = withContext(Dispatchers.IO) {
             try {
                 val dir = File(appContext.cacheDir, "updates").apply { mkdirs() }
                 val target = File(dir, "update.apk")
-                val conn = (URL(info.apkUrl).openConnection() as HttpURLConnection).apply {
+                val conn = openConnection(info.apkUrl).apply {
                     connectTimeout = 15_000
                     readTimeout = 30_000
                     instanceFollowRedirects = true
@@ -154,11 +198,12 @@ class Updater(context: Context) {
                 }
                 target
             } catch (e: Exception) {
+                downloadError = describe(e)
                 null
             }
         }
         if (file == null) {
-            state = UpdateState.Failed("Falló la descarga. Inténtalo de nuevo.")
+            state = UpdateState.Failed(downloadError ?: "Falló la descarga. Inténtalo de nuevo.")
             return
         }
         state = UpdateState.Ready(info, file)

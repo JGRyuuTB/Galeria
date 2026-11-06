@@ -13,6 +13,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -74,6 +76,9 @@ fun GlassNavBar(
                         fallback = scheme.surfaceContainerHigh.copy(alpha = 0.95f),
                         corner = 32.dp,
                     )
+                    // Absorbe los toques en toda la píldora: los huecos entre iconos ya no llegan
+                    // a las fotos o álbumes que hay detrás.
+                    .pointerInput(Unit) { detectTapGestures { } }
                     .padding(6.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,

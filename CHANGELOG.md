@@ -1,5 +1,12 @@
 # Registro de cambios
 
+## 1.1.1
+
+- Álbumes: ya se abren todos (algunos tenían un identificador negativo y la app los ignoraba).
+- Animaciones: el visor vuelve a crecer desde la miniatura y a regresar a ella al cerrarse.
+- Barra de navegación: ya no deja pasar toques a las fotos o álbumes que hay detrás.
+- Actualizaciones: usa la red activa y explica la causa real cuando falla (firewall, VPN, tiempo agotado...).
+
 ## 1.1.0 — Estable
 
 - Actualizaciones OTA: la app busca versiones nuevas en GitHub Releases, las descarga y lanza el instalador (Ajustes > Actualizaciones).
